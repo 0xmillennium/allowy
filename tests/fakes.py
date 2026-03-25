@@ -1,17 +1,22 @@
 from datetime import datetime, timedelta, timezone
-from src.core.ports.repository import AbstractIpSourceRepository
-from src.core.ports.unit_of_work import AbstractUnitOfWork
-from src.core.ports.scheduler import AbstractScheduler
+
 from src.core.ports.fetcher import AbstractIPFetcher
 from src.core.ports.file_operator import AbstractFileOperator
+from src.core.ports.repository import AbstractIpSourceRepository
+from src.core.ports.scheduler import AbstractScheduler
 from src.core.ports.trigger import AbstractSyncTrigger
+from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.domain.model import IpSource
-from src.domain.value_objects import IpSourceID, SourceUrl, SourceName, SourceStatus, CIDRBlock
-from src.domain.events import Event
+from src.domain.value_objects import (
+    CIDRBlock,
+    IpSourceID,
+    SourceName,
+    SourceStatus,
+    SourceUrl,
+)
 
 
 class FakeRepository(AbstractIpSourceRepository):
-
     def __init__(self) -> None:
         super().__init__()
         self._storage: dict[str, IpSource] = {}
@@ -42,7 +47,6 @@ class FakeRepository(AbstractIpSourceRepository):
 
 
 class FakeUnitOfWork(AbstractUnitOfWork):
-
     def __init__(self) -> None:
         self.ip_sources = FakeRepository()
         self.committed = False
@@ -71,7 +75,6 @@ class FakeUnitOfWork(AbstractUnitOfWork):
 
 
 class FakeScheduler(AbstractScheduler):
-
     def __init__(self) -> None:
         self.registered: dict[str, dict] = {}
         self.paused: set[str] = set()
@@ -128,12 +131,15 @@ class FakeScheduler(AbstractScheduler):
 
 
 class FakeFetcher(AbstractIPFetcher):
-
     def __init__(self, ranges: list[CIDRBlock] | None = None) -> None:
-        self.ranges = [
-            CIDRBlock(value="192.168.1.0/24"),
-            CIDRBlock(value="2001:4860::/32"),
-        ] if ranges is None else ranges
+        self.ranges = (
+            [
+                CIDRBlock(value="192.168.1.0/24"),
+                CIDRBlock(value="2001:4860::/32"),
+            ]
+            if ranges is None
+            else ranges
+        )
         self.called_with: list[IpSource] = []
 
     async def sync(self, source: IpSource) -> list[CIDRBlock]:
@@ -145,7 +151,6 @@ class FakeFetcher(AbstractIPFetcher):
 
 
 class FakeTrigger(AbstractSyncTrigger):
-
     def __init__(self) -> None:
         self.synced: list[str] = []
 
@@ -154,7 +159,6 @@ class FakeTrigger(AbstractSyncTrigger):
 
 
 class FakeFileOperator(AbstractFileOperator):
-
     def __init__(self) -> None:
         self._storage: dict[str, str] = {}
 

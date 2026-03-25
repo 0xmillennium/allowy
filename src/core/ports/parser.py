@@ -1,6 +1,8 @@
-"""Abstract parser defining the contract for converting upstream responses to CIDR blocks."""
+"""Abstract parser defining the contract for converting
+upstream responses to CIDR blocks."""
 
 from abc import ABC, abstractmethod
+
 from src.domain.value_objects import CIDRBlock
 
 

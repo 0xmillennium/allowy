@@ -1,59 +1,55 @@
 import pytest
+from pydantic import ValidationError
+
+from src.application.formatters import FORMATTERS
 from src.application.handlers import (
     handle_create_ip_source,
-    handle_sync_ip_source,
     handle_delete_ip_source,
+    handle_initialize_application,
+    handle_ip_ranges_updated,
+    handle_notify,
+    handle_pause_all_ip_sources,
+    handle_pause_ip_source,
+    handle_resume_all_ip_sources,
+    handle_resume_ip_source,
+    handle_sync_ip_source,
     handle_update_source_name,
     handle_update_source_type,
     handle_update_sync_interval,
-    handle_pause_ip_source,
-    handle_resume_ip_source,
-    handle_pause_all_ip_sources,
-    handle_resume_all_ip_sources,
-    handle_ip_ranges_updated,
-    handle_initialize_application,
-    handle_notify,
+)
+from src.core.exceptions.exceptions import (
+    FetcherNetworkError,
+    IpSourceAlreadyExistsError,
+    IpSourceNotFoundError,
+    UnsupportedSourceTypeError,
 )
 from src.domain.commands import (
     CreateIpSource,
+    DeleteIpSource,
+    InitializeApplication,
+    PauseAllIpSources,
+    PauseIpSource,
+    ResumeAllIpSources,
+    ResumeIpSource,
     SourceData,
     SyncIpSource,
-    DeleteIpSource,
     UpdateSourceName,
     UpdateSourceType,
     UpdateSyncInterval,
-    PauseIpSource,
-    ResumeIpSource,
-    PauseAllIpSources,
-    ResumeAllIpSources,
-    InitializeApplication,
 )
-from pydantic import ValidationError
 from src.domain.events import IpRangesUpdated, IpSourceDeleted
 from src.domain.model import IpSource
 from src.domain.value_objects import (
+    CIDRBlock,
     IpSourceID,
     SourceStatus,
-    CIDRBlock,
 )
-from src.core.exceptions.exceptions import (
-    IpSourceNotFoundException,
-    IpSourceAlreadyExistsException,
-    UnsupportedSourceTypeException,
-    FetcherNetworkException,
-)
-from src.application.formatters import FORMATTERS
 from tests.fakes import (
-    FakeUnitOfWork,
-    FakeScheduler,
     FakeFetcher,
-    FakeTrigger,
-    FakeFileOperator,
 )
 
 
 class TestHandleCreateIpSource:
-
     async def test_creates_and_persists_source(
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
@@ -66,7 +62,11 @@ class TestHandleCreateIpSource:
             )
         )
         await handle_create_ip_source(
-            cmd, uow=fake_uow, trigger=fake_trigger, scheduler=fake_scheduler, fetcher=fake_fetcher
+            cmd,
+            uow=fake_uow,
+            trigger=fake_trigger,
+            scheduler=fake_scheduler,
+            fetcher=fake_fetcher,
         )
         sources = await fake_uow.ip_sources.get_all()
         assert len(sources) == 1
@@ -84,7 +84,11 @@ class TestHandleCreateIpSource:
             )
         )
         await handle_create_ip_source(
-            cmd, uow=fake_uow, trigger=fake_trigger, scheduler=fake_scheduler, fetcher=fake_fetcher
+            cmd,
+            uow=fake_uow,
+            trigger=fake_trigger,
+            scheduler=fake_scheduler,
+            fetcher=fake_fetcher,
         )
         sources = await fake_uow.ip_sources.get_all()
         assert fake_scheduler.is_registered(sources[0])
@@ -101,7 +105,11 @@ class TestHandleCreateIpSource:
             )
         )
         await handle_create_ip_source(
-            cmd, uow=fake_uow, trigger=fake_trigger, scheduler=fake_scheduler, fetcher=fake_fetcher
+            cmd,
+            uow=fake_uow,
+            trigger=fake_trigger,
+            scheduler=fake_scheduler,
+            fetcher=fake_fetcher,
         )
         sources = await fake_uow.ip_sources.get_all()
         source = sources[0]
@@ -112,7 +120,12 @@ class TestHandleCreateIpSource:
         assert source.id.value in fake_trigger.synced
 
     async def test_raises_if_url_already_exists(
-        self, fake_uow_with_source, fake_scheduler, fake_trigger, fake_fetcher, sample_source
+        self,
+        fake_uow_with_source,
+        fake_scheduler,
+        fake_trigger,
+        fake_fetcher,
+        sample_source,
     ):
         cmd = CreateIpSource(
             source=SourceData(
@@ -122,7 +135,7 @@ class TestHandleCreateIpSource:
                 sync_interval=60,
             )
         )
-        with pytest.raises(IpSourceAlreadyExistsException):
+        with pytest.raises(IpSourceAlreadyExistsError):
             await handle_create_ip_source(
                 cmd,
                 uow=fake_uow_with_source,
@@ -132,7 +145,12 @@ class TestHandleCreateIpSource:
             )
 
     async def test_raises_if_name_already_exists(
-        self, fake_uow_with_source, fake_scheduler, fake_trigger, fake_fetcher, sample_source
+        self,
+        fake_uow_with_source,
+        fake_scheduler,
+        fake_trigger,
+        fake_fetcher,
+        sample_source,
     ):
         cmd = CreateIpSource(
             source=SourceData(
@@ -142,7 +160,7 @@ class TestHandleCreateIpSource:
                 sync_interval=60,
             )
         )
-        with pytest.raises(IpSourceAlreadyExistsException):
+        with pytest.raises(IpSourceAlreadyExistsError):
             await handle_create_ip_source(
                 cmd,
                 uow=fake_uow_with_source,
@@ -153,14 +171,11 @@ class TestHandleCreateIpSource:
 
 
 class TestHandleSyncIpSource:
-
     async def test_updates_ranges_on_success(
         self, fake_uow_with_source, fake_fetcher, sample_source
     ):
         cmd = SyncIpSource(source_id=sample_source.id.value)
-        await handle_sync_ip_source(
-            cmd, uow=fake_uow_with_source, fetcher=fake_fetcher
-        )
+        await handle_sync_ip_source(cmd, uow=fake_uow_with_source, fetcher=fake_fetcher)
         source = await fake_uow_with_source.ip_sources.get(sample_source.id)
         assert source.status == SourceStatus.SYNCED
         assert len(source.ip_ranges) > 0
@@ -181,24 +196,21 @@ class TestHandleSyncIpSource:
     ):
         class FailingFetcher(FakeFetcher):
             async def sync(self, source):
-                raise FetcherNetworkException(msg="timeout")
+                raise FetcherNetworkError(msg="timeout")
 
         cmd = SyncIpSource(source_id=sample_source.id.value)
-        with pytest.raises(FetcherNetworkException):
+        with pytest.raises(FetcherNetworkError):
             await handle_sync_ip_source(
                 cmd, uow=fake_uow_with_source, fetcher=FailingFetcher()
             )
 
     async def test_raises_if_source_not_found(self, fake_uow, fake_fetcher):
         cmd = SyncIpSource(source_id="00000000-0000-0000-0000-000000000000")
-        with pytest.raises(IpSourceNotFoundException):
-            await handle_sync_ip_source(
-                cmd, uow=fake_uow, fetcher=fake_fetcher
-            )
+        with pytest.raises(IpSourceNotFoundError):
+            await handle_sync_ip_source(cmd, uow=fake_uow, fetcher=fake_fetcher)
 
 
 class TestHandleDeleteIpSource:
-
     async def test_deletes_source(
         self, fake_uow_with_source, fake_scheduler, sample_source
     ):
@@ -233,20 +245,15 @@ class TestHandleDeleteIpSource:
 
     async def test_raises_if_source_not_found(self, fake_uow, fake_scheduler):
         cmd = DeleteIpSource(source_id="00000000-0000-0000-0000-000000000000")
-        with pytest.raises(IpSourceNotFoundException):
-            await handle_delete_ip_source(
-                cmd, uow=fake_uow, scheduler=fake_scheduler
-            )
+        with pytest.raises(IpSourceNotFoundError):
+            await handle_delete_ip_source(cmd, uow=fake_uow, scheduler=fake_scheduler)
 
 
 class TestHandleUpdateSyncInterval:
-
     async def test_updates_interval(
         self, fake_uow_with_source, fake_scheduler, fake_trigger, sample_source
     ):
-        cmd = UpdateSyncInterval(
-            source_id=sample_source.id.value, sync_interval=120
-        )
+        cmd = UpdateSyncInterval(source_id=sample_source.id.value, sync_interval=120)
         await handle_update_sync_interval(
             cmd,
             uow=fake_uow_with_source,
@@ -259,9 +266,7 @@ class TestHandleUpdateSyncInterval:
     async def test_re_registers_scheduler_job(
         self, fake_uow_with_source, fake_scheduler, fake_trigger, sample_source
     ):
-        cmd = UpdateSyncInterval(
-            source_id=sample_source.id.value, sync_interval=120
-        )
+        cmd = UpdateSyncInterval(source_id=sample_source.id.value, sync_interval=120)
         await handle_update_sync_interval(
             cmd,
             uow=fake_uow_with_source,
@@ -273,9 +278,7 @@ class TestHandleUpdateSyncInterval:
     async def test_invalid_interval_raises_validation_error(
         self, fake_uow_with_source, fake_scheduler, fake_trigger, sample_source
     ):
-        cmd = UpdateSyncInterval(
-            source_id=sample_source.id.value, sync_interval=2
-        )
+        cmd = UpdateSyncInterval(source_id=sample_source.id.value, sync_interval=2)
         with pytest.raises(ValidationError):
             await handle_update_sync_interval(
                 cmd,
@@ -290,7 +293,7 @@ class TestHandleUpdateSyncInterval:
         cmd = UpdateSyncInterval(
             source_id="00000000-0000-0000-0000-000000000000", sync_interval=120
         )
-        with pytest.raises(IpSourceNotFoundException):
+        with pytest.raises(IpSourceNotFoundError):
             await handle_update_sync_interval(
                 cmd,
                 uow=fake_uow,
@@ -300,13 +303,8 @@ class TestHandleUpdateSyncInterval:
 
 
 class TestHandleUpdateSourceName:
-
-    async def test_updates_source_name(
-        self, fake_uow_with_source, sample_source
-    ):
-        cmd = UpdateSourceName(
-            source_id=sample_source.id.value, name="NewName"
-        )
+    async def test_updates_source_name(self, fake_uow_with_source, sample_source):
+        cmd = UpdateSourceName(source_id=sample_source.id.value, name="NewName")
         await handle_update_source_name(cmd, uow=fake_uow_with_source)
         source = await fake_uow_with_source.ip_sources.get(sample_source.id)
         assert source.name.value == "NewName"
@@ -315,38 +313,35 @@ class TestHandleUpdateSourceName:
         cmd = UpdateSourceName(
             source_id="00000000-0000-0000-0000-000000000000", name="NewName"
         )
-        with pytest.raises(IpSourceNotFoundException):
+        with pytest.raises(IpSourceNotFoundError):
             await handle_update_source_name(cmd, uow=fake_uow)
 
-    async def test_raises_if_name_already_exists(
-        self, fake_uow, fake_scheduler
-    ):
+    async def test_raises_if_name_already_exists(self, fake_uow, fake_scheduler):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(source1)
         await fake_uow.ip_sources.add(source2)
 
-        cmd = UpdateSourceName(
-            source_id=source2.id.value, name="Source1"
-        )
-        with pytest.raises(IpSourceAlreadyExistsException):
+        cmd = UpdateSourceName(source_id=source2.id.value, name="Source1")
+        with pytest.raises(IpSourceAlreadyExistsError):
             await handle_update_source_name(cmd, uow=fake_uow)
 
 
 class TestHandleUpdateSourceType:
-
     async def test_updates_source_type(
         self, fake_uow_with_source, fake_fetcher, sample_source
     ):
-        cmd = UpdateSourceType(
-            source_id=sample_source.id.value, source_type="google"
-        )
+        cmd = UpdateSourceType(source_id=sample_source.id.value, source_type="google")
         await handle_update_source_type(
             cmd, uow=fake_uow_with_source, fetcher=fake_fetcher
         )
@@ -357,10 +352,8 @@ class TestHandleUpdateSourceType:
         cmd = UpdateSourceType(
             source_id="00000000-0000-0000-0000-000000000000", source_type="google"
         )
-        with pytest.raises(IpSourceNotFoundException):
-            await handle_update_source_type(
-                cmd, uow=fake_uow, fetcher=fake_fetcher
-            )
+        with pytest.raises(IpSourceNotFoundError):
+            await handle_update_source_type(cmd, uow=fake_uow, fetcher=fake_fetcher)
 
     async def test_raises_if_source_type_unsupported(
         self, fake_uow_with_source, fake_fetcher, sample_source
@@ -368,14 +361,13 @@ class TestHandleUpdateSourceType:
         cmd = UpdateSourceType(
             source_id=sample_source.id.value, source_type="unsupported"
         )
-        with pytest.raises(UnsupportedSourceTypeException):
+        with pytest.raises(UnsupportedSourceTypeError):
             await handle_update_source_type(
                 cmd, uow=fake_uow_with_source, fetcher=fake_fetcher
             )
 
 
 class TestHandlePauseResumeIpSource:
-
     async def test_pause_transitions_to_paused(
         self, fake_uow_with_source, fake_scheduler, sample_source
     ):
@@ -409,37 +401,30 @@ class TestHandlePauseResumeIpSource:
         source = await fake_uow_with_source.ip_sources.get(sample_source.id)
         assert source.status == SourceStatus.SYNCED
 
-    async def test_pause_raises_if_source_not_found(
-        self, fake_uow, fake_scheduler
-    ):
+    async def test_pause_raises_if_source_not_found(self, fake_uow, fake_scheduler):
         cmd = PauseIpSource(source_id="00000000-0000-0000-0000-000000000000")
-        with pytest.raises(IpSourceNotFoundException):
-            await handle_pause_ip_source(
-                cmd, uow=fake_uow, scheduler=fake_scheduler
-            )
+        with pytest.raises(IpSourceNotFoundError):
+            await handle_pause_ip_source(cmd, uow=fake_uow, scheduler=fake_scheduler)
 
-    async def test_resume_raises_if_source_not_found(
-        self, fake_uow, fake_scheduler
-    ):
+    async def test_resume_raises_if_source_not_found(self, fake_uow, fake_scheduler):
         cmd = ResumeIpSource(source_id="00000000-0000-0000-0000-000000000000")
-        with pytest.raises(IpSourceNotFoundException):
-            await handle_resume_ip_source(
-                cmd, uow=fake_uow, scheduler=fake_scheduler
-            )
+        with pytest.raises(IpSourceNotFoundError):
+            await handle_resume_ip_source(cmd, uow=fake_uow, scheduler=fake_scheduler)
 
 
 class TestHandlePauseResumeAll:
-
-    async def test_pause_all_pauses_all_sources(
-        self, fake_uow, fake_scheduler
-    ):
+    async def test_pause_all_pauses_all_sources(self, fake_uow, fake_scheduler):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(source1)
         await fake_uow.ip_sources.add(source2)
@@ -452,16 +437,18 @@ class TestHandlePauseResumeAll:
         assert fake_scheduler.is_paused(source1)
         assert fake_scheduler.is_paused(source2)
 
-    async def test_resume_all_resumes_all_sources(
-        self, fake_uow, fake_scheduler
-    ):
+    async def test_resume_all_resumes_all_sources(self, fake_uow, fake_scheduler):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         source1.pause()
         source2.pause()
@@ -478,13 +465,10 @@ class TestHandlePauseResumeAll:
 
 
 class TestHandleIpRangesUpdated:
-
     async def test_writes_all_format_files(
         self, fake_uow_with_source, fake_filer, sample_source
     ):
-        sample_source.update_ip_ranges(
-            [CIDRBlock(value="192.168.1.0/24")]
-        )
+        sample_source.update_ip_ranges([CIDRBlock(value="192.168.1.0/24")])
         event = IpRangesUpdated(source_id=sample_source.id)
         await handle_ip_ranges_updated(
             event, uow=fake_uow_with_source, filer=fake_filer
@@ -492,16 +476,18 @@ class TestHandleIpRangesUpdated:
         for formatter in FORMATTERS:
             assert fake_filer.has_file(formatter.filename())
 
-    async def test_only_includes_active_sources(
-        self, fake_uow, fake_filer
-    ):
+    async def test_only_includes_active_sources(self, fake_uow, fake_filer):
         active = IpSource.create(
-            name="Active", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Active",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         failed = IpSource.create(
-            name="Failed", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Failed",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         active.update_ip_ranges([CIDRBlock(value="192.168.1.0/24")])
         failed.update_ip_ranges([])
@@ -509,22 +495,22 @@ class TestHandleIpRangesUpdated:
         await fake_uow.ip_sources.add(failed)
 
         event = IpRangesUpdated(source_id=active.id)
-        await handle_ip_ranges_updated(
-            event, uow=fake_uow, filer=fake_filer
-        )
+        await handle_ip_ranges_updated(event, uow=fake_uow, filer=fake_filer)
         nginx_content = fake_filer.get_content("nginx.conf")
         assert "192.168.1.0/24" in nginx_content
 
-    async def test_excludes_paused_sources_with_ranges(
-        self, fake_uow, fake_filer
-    ):
+    async def test_excludes_paused_sources_with_ranges(self, fake_uow, fake_filer):
         active = IpSource.create(
-            name="Active", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Active",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         paused = IpSource.create(
-            name="Paused", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Paused",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         active.update_ip_ranges([CIDRBlock(value="192.168.1.0/24")])
         paused.update_ip_ranges([CIDRBlock(value="10.0.0.0/8")])
@@ -533,9 +519,7 @@ class TestHandleIpRangesUpdated:
         await fake_uow.ip_sources.add(paused)
 
         event = IpRangesUpdated(source_id=active.id)
-        await handle_ip_ranges_updated(
-            event, uow=fake_uow, filer=fake_filer
-        )
+        await handle_ip_ranges_updated(event, uow=fake_uow, filer=fake_filer)
         nginx_content = fake_filer.get_content("nginx.conf")
         assert "192.168.1.0/24" in nginx_content
         assert "10.0.0.0/8" not in nginx_content
@@ -544,44 +528,43 @@ class TestHandleIpRangesUpdated:
         self, fake_uow, fake_filer
     ):
         source = IpSource.create(
-            name="Source", url="https://example.com",
-            source_type="google", sync_interval=60
+            name="Source",
+            url="https://example.com",
+            source_type="google",
+            sync_interval=60,
         )
         source.update_ip_ranges([CIDRBlock(value="192.168.1.0/24")])
         await fake_uow.ip_sources.add(source)
 
         event = IpSourceDeleted(source_id=source.id)
-        await handle_ip_ranges_updated(
-            event, uow=fake_uow, filer=fake_filer
-        )
+        await handle_ip_ranges_updated(event, uow=fake_uow, filer=fake_filer)
         for formatter in FORMATTERS:
             assert fake_filer.has_file(formatter.filename())
 
-    async def test_no_active_sources_still_writes_files(
-        self, fake_uow, fake_filer
-    ):
+    async def test_no_active_sources_still_writes_files(self, fake_uow, fake_filer):
         event = IpRangesUpdated(
             source_id=IpSourceID(value="00000000-0000-0000-0000-000000000000")
         )
-        await handle_ip_ranges_updated(
-            event, uow=fake_uow, filer=fake_filer
-        )
+        await handle_ip_ranges_updated(event, uow=fake_uow, filer=fake_filer)
         for formatter in FORMATTERS:
             assert fake_filer.has_file(formatter.filename())
 
 
 class TestHandleInitializeApplication:
-
     async def test_registers_all_existing_sources(
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(source1)
         await fake_uow.ip_sources.add(source2)
@@ -625,8 +608,10 @@ class TestHandleInitializeApplication:
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         source = IpSource.create(
-            name="OldName", url="https://example.com",
-            source_type="google", sync_interval=60
+            name="OldName",
+            url="https://example.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(source)
 
@@ -656,8 +641,10 @@ class TestHandleInitializeApplication:
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         existing = IpSource.create(
-            name="Googlebot", url="https://existing.com",
-            source_type="google", sync_interval=60
+            name="Googlebot",
+            url="https://existing.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(existing)
 
@@ -709,8 +696,10 @@ class TestHandleInitializeApplication:
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         source = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source.pause()
         await fake_uow.ip_sources.add(source)
@@ -740,8 +729,10 @@ class TestHandleInitializeApplication:
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         source = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         await fake_uow.ip_sources.add(source)
 
@@ -759,8 +750,10 @@ class TestHandleInitializeApplication:
         self, fake_uow, fake_scheduler, fake_trigger, fake_fetcher
     ):
         source = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source.pause()
         await fake_uow.ip_sources.add(source)
@@ -777,7 +770,6 @@ class TestHandleInitializeApplication:
 
 
 class TestHandleNotify:
-
     async def test_notify_is_noop(self):
         event = IpRangesUpdated(source_id=IpSourceID.create())
         await handle_notify(event)

@@ -1,12 +1,10 @@
-import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.entrypoints.http.ip_sources import router as ip_sources_router
-from src.entrypoints.http.dependencies import get_uow
 from src.core.exceptions.handlers import EXCEPTION_HANDLERS
-from src.core.ports.unit_of_work import AbstractUnitOfWork
+from src.entrypoints.http.dependencies import get_uow
+from src.entrypoints.http.ip_sources import router as ip_sources_router
 
 
 class _FailingUoW:
@@ -36,7 +34,6 @@ def _make_transport(app: FastAPI, raise_app_exceptions: bool = True) -> ASGITran
 
 
 class TestSQLAlchemyErrorHandler:
-
     async def test_database_error_returns_500(self):
         app = _make_app(_FailingUoW(SQLAlchemyError("connection lost")))
         transport = _make_transport(app)
@@ -50,7 +47,6 @@ class TestSQLAlchemyErrorHandler:
 
 
 class TestGenericErrorHandler:
-
     async def test_unexpected_error_returns_500(self):
         app = _make_app(_FailingUoW(RuntimeError("unexpected failure")))
         transport = _make_transport(app, raise_app_exceptions=False)

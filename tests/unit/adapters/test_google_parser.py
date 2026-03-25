@@ -1,8 +1,6 @@
 import json
-import pytest
 
 from src.adapters.fetcher.parsers.google import GoogleJsonParser
-
 
 VALID_GOOGLE_RESPONSE = {
     "prefixes": [
@@ -14,7 +12,6 @@ VALID_GOOGLE_RESPONSE = {
 
 
 class TestGoogleJsonParser:
-
     def test_parses_valid_response(self):
         parser = GoogleJsonParser()
         data = json.dumps(VALID_GOOGLE_RESPONSE).encode()

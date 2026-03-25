@@ -1,22 +1,20 @@
-import pytest
-from datetime import datetime, timezone, timedelta
-from src.domain.model import IpSource, IpRange
-from src.domain.value_objects import CIDRBlock, SourceStatus, IPVersion
+from datetime import datetime, timedelta, timezone
+
 from src.domain.events import (
-    IpSourceCreated,
     IpRangesUpdated,
-    SyncIntervalUpdated,
+    IpSourceCreated,
     IpSourcePaused,
     IpSourceResumed,
+    SyncIntervalUpdated,
 )
-
+from src.domain.model import IpRange, IpSource
+from src.domain.value_objects import CIDRBlock, IPVersion, SourceStatus
 
 IPV4_RANGE = CIDRBlock(value="192.168.1.0/24")
 IPV6_RANGE = CIDRBlock(value="2001:4860::/32")
 
 
 class TestIpSourceCreate:
-
     def test_create_produces_correct_initial_state(self, sample_source):
         assert sample_source.status == SourceStatus.CREATED
         assert sample_source.ip_ranges == []
@@ -43,7 +41,6 @@ class TestIpSourceCreate:
 
 
 class TestUpdateRanges:
-
     def test_update_ip_ranges_with_valid_ranges(self, sample_source):
         sample_source.events.clear()
         sample_source.update_ip_ranges([IPV4_RANGE, IPV6_RANGE])
@@ -56,7 +53,9 @@ class TestUpdateRanges:
         assert len(sample_source.events) == 1
         assert isinstance(sample_source.events[0], IpRangesUpdated)
 
-    def test_update_ip_ranges_with_empty_list_transitions_to_failed(self, sample_source):
+    def test_update_ip_ranges_with_empty_list_transitions_to_failed(
+        self, sample_source
+    ):
         sample_source.update_ip_ranges([])
         assert sample_source.status == SourceStatus.FAILED
 
@@ -72,7 +71,6 @@ class TestUpdateRanges:
 
 
 class TestUpdateSyncInterval:
-
     def test_update_sync_interval_updates_value(self, sample_source):
         sample_source.events.clear()
         sample_source.update_sync_interval(120)
@@ -90,7 +88,6 @@ class TestUpdateSyncInterval:
 
 
 class TestPauseResume:
-
     def test_pause_transitions_to_paused(self, sample_source):
         sample_source.events.clear()
         sample_source.pause()
@@ -126,7 +123,6 @@ class TestPauseResume:
 
 
 class TestProperties:
-
     def test_is_active_true_when_synced(self, sample_source):
         sample_source.update_ip_ranges([IPV4_RANGE])
         assert sample_source.is_active is True
@@ -161,7 +157,6 @@ class TestProperties:
 
 
 class TestEdgeCases:
-
     def test_update_ranges_replaces_previous(self, sample_source):
         sample_source.update_ip_ranges([IPV4_RANGE])
         sample_source.update_ip_ranges([IPV6_RANGE])
@@ -179,5 +174,7 @@ class TestEdgeCases:
         sample_source.events.clear()
         sample_source.update_ip_ranges([IPV4_RANGE])
         sample_source.update_ip_ranges([IPV6_RANGE])
-        range_events = [e for e in sample_source.events if isinstance(e, IpRangesUpdated)]
+        range_events = [
+            e for e in sample_source.events if isinstance(e, IpRangesUpdated)
+        ]
         assert len(range_events) == 2

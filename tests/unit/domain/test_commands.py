@@ -1,24 +1,25 @@
-import pytest
 from dataclasses import FrozenInstanceError
 from uuid import UUID
+
+import pytest
+
 from src.domain.commands import (
     CreateIpSource,
+    DeleteIpSource,
+    InitializeApplication,
+    PauseAllIpSources,
+    PauseIpSource,
+    ResumeAllIpSources,
+    ResumeIpSource,
     SourceData,
+    SyncIpSource,
     UpdateSourceName,
     UpdateSourceType,
     UpdateSyncInterval,
-    PauseIpSource,
-    ResumeIpSource,
-    DeleteIpSource,
-    SyncIpSource,
-    PauseAllIpSources,
-    ResumeAllIpSources,
-    InitializeApplication,
 )
 
 
 class TestCommandBase:
-
     def test_command_has_valid_command_id(self):
         cmd = CreateIpSource(
             source=SourceData(
@@ -74,7 +75,6 @@ class TestCommandBase:
 
 
 class TestCreateIpSource:
-
     def test_carries_correct_fields(self):
         cmd = CreateIpSource(
             source=SourceData(
@@ -91,7 +91,6 @@ class TestCreateIpSource:
 
 
 class TestUpdateSourceName:
-
     def test_carries_correct_fields(self):
         cmd = UpdateSourceName(
             source_id="00000000-0000-0000-0000-000000000000",
@@ -102,7 +101,6 @@ class TestUpdateSourceName:
 
 
 class TestUpdateSourceType:
-
     def test_carries_correct_fields(self):
         cmd = UpdateSourceType(
             source_id="00000000-0000-0000-0000-000000000000",
@@ -113,7 +111,6 @@ class TestUpdateSourceType:
 
 
 class TestUpdateSyncInterval:
-
     def test_carries_correct_fields(self):
         cmd = UpdateSyncInterval(
             source_id="00000000-0000-0000-0000-000000000000",
@@ -124,57 +121,42 @@ class TestUpdateSyncInterval:
 
 
 class TestPauseIpSource:
-
     def test_carries_source_id(self):
-        cmd = PauseIpSource(
-            source_id="00000000-0000-0000-0000-000000000000"
-        )
+        cmd = PauseIpSource(source_id="00000000-0000-0000-0000-000000000000")
         assert cmd.source_id == "00000000-0000-0000-0000-000000000000"
 
 
 class TestResumeIpSource:
-
     def test_carries_source_id(self):
-        cmd = ResumeIpSource(
-            source_id="00000000-0000-0000-0000-000000000000"
-        )
+        cmd = ResumeIpSource(source_id="00000000-0000-0000-0000-000000000000")
         assert cmd.source_id == "00000000-0000-0000-0000-000000000000"
 
 
 class TestDeleteIpSource:
-
     def test_carries_source_id(self):
-        cmd = DeleteIpSource(
-            source_id="00000000-0000-0000-0000-000000000000"
-        )
+        cmd = DeleteIpSource(source_id="00000000-0000-0000-0000-000000000000")
         assert cmd.source_id == "00000000-0000-0000-0000-000000000000"
 
 
 class TestSyncIpSource:
-
     def test_carries_source_id(self):
-        cmd = SyncIpSource(
-            source_id="00000000-0000-0000-0000-000000000000"
-        )
+        cmd = SyncIpSource(source_id="00000000-0000-0000-0000-000000000000")
         assert cmd.source_id == "00000000-0000-0000-0000-000000000000"
 
 
 class TestPauseAllIpSources:
-
     def test_has_command_id(self):
         cmd = PauseAllIpSources()
         assert isinstance(cmd.command_id, UUID)
 
 
 class TestResumeAllIpSources:
-
     def test_has_command_id(self):
         cmd = ResumeAllIpSources()
         assert isinstance(cmd.command_id, UUID)
 
 
 class TestInitializeApplication:
-
     def test_has_command_id(self):
         cmd = InitializeApplication()
         assert isinstance(cmd.command_id, UUID)

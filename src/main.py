@@ -1,27 +1,30 @@
 """FastAPI application setup, lifecycle management, and database initialization."""
 
-import httpx
 import logging
-from pathlib import Path
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
+
+import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
-from src.config import settings
-from src.adapters.fetcher import HttpIPFetcher
-from src.adapters.scheduler import APScheduler
-from src.adapters.file_operator import LocalFileOperator
-from src.adapters.http_trigger import HttpSyncTrigger
-from src.entrypoints.http.sync import router as sync_router
-from src.entrypoints.http.configs import router as configs_router
-from src.entrypoints.http.ip_sources import router as ip_sources_router
-from src.entrypoints.http.health import router as health_router
-from src.entrypoints.http.initialize import router as initialize_router
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+
 from src.adapters.database.orm import init_orm_mappers
 from src.adapters.database.schema import metadata
+from src.adapters.fetcher import HttpIPFetcher
+from src.adapters.file_operator import LocalFileOperator
+from src.adapters.http_trigger import HttpSyncTrigger
+from src.adapters.scheduler import APScheduler
+from src.config import settings
+from src.core.exceptions import (
+    ApplicationStartupError,
+    DatabaseInitializationError,
+)
 from src.core.exceptions.handlers import EXCEPTION_HANDLERS
-from src.core.exceptions import DatabaseInitializationException, ApplicationStartupException
-
+from src.entrypoints.http.configs import router as configs_router
+from src.entrypoints.http.health import router as health_router
+from src.entrypoints.http.initialize import router as initialize_router
+from src.entrypoints.http.ip_sources import router as ip_sources_router
+from src.entrypoints.http.sync import router as sync_router
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +37,7 @@ async def init_db(engine: AsyncEngine) -> None:
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.critical("Database initialization failed", extra={"error": str(e)})
-        raise DatabaseInitializationException(msg=str(e))
+        raise DatabaseInitializationError(msg=str(e))
 
 
 @asynccontextmanager
@@ -45,7 +48,6 @@ async def lifespan(app: FastAPI):
     scheduler_adapter = None
 
     try:
-
         # infrastructure
         engine_kwargs = {}
         if settings.database_url.startswith("sqlite"):
@@ -55,20 +57,13 @@ async def lifespan(app: FastAPI):
             settings.database_url,
             **engine_kwargs,
         )
-        session_factory = async_sessionmaker(
-            engine,
-            expire_on_commit=False
-        )
+        session_factory = async_sessionmaker(engine, expire_on_commit=False)
         trigger_client = httpx.AsyncClient(
             base_url=f"http://localhost:{settings.server_port}",
-            timeout=settings.http_timeout
+            timeout=settings.http_timeout,
         )
-        fetcher_client = httpx.AsyncClient(
-            timeout=settings.http_timeout
-        )
-        scheduler = AsyncIOScheduler(
-            timezone=settings.scheduler_timezone
-        )
+        fetcher_client = httpx.AsyncClient(timeout=settings.http_timeout)
+        scheduler = AsyncIOScheduler(timezone=settings.scheduler_timezone)
 
         # initialize database
         await init_db(engine)
@@ -95,7 +90,7 @@ async def lifespan(app: FastAPI):
 
     except Exception as e:
         logger.critical("Application startup failed", extra={"error": str(e)})
-        raise ApplicationStartupException(msg=str(e))
+        raise ApplicationStartupError(msg=str(e))
 
     finally:
         logger.info("Application shutting down")
@@ -133,4 +128,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-

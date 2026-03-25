@@ -5,7 +5,6 @@ from src.entrypoints.cli.client import resolve_base_url
 
 
 class TestResolveBaseUrl:
-
     def test_explicit_base_url_takes_priority(self):
         result = resolve_base_url("http://custom:9000")
         assert result == "http://custom:9000"

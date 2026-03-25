@@ -1,13 +1,11 @@
 import pytest
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from src.adapters.database.orm import init_orm_mappers
 from src.adapters.database.schema import metadata
-from src.adapters.database.orm import init_orm_mappers, mapper_registry
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.domain.model import IpSource
-from src.domain.value_objects import CIDRBlock
-
 
 _mappers_initialized = False
 
@@ -53,5 +51,3 @@ def sample_source() -> IpSource:
         source_type="google",
         sync_interval=60,
     )
-
-

@@ -5,12 +5,11 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, Dict, List, Type, Union
 
 from src.core.exceptions.exceptions import (
-    InvalidMessageTypeException,
-    UnregisteredCommandException,
-    UnregisteredEventException,
+    InvalidMessageTypeError,
+    UnregisteredCommandError,
+    UnregisteredEventError,
 )
 from src.domain import commands, events
-
 
 if TYPE_CHECKING:
     from src.core.ports.unit_of_work import AbstractUnitOfWork
@@ -57,10 +56,13 @@ class MessageBus(AbstractMessageBus):
             message (Message): The initial command or event to be processed.
 
         Raises:
-            InvalidMessageTypeException: If the received message is neither
+            InvalidMessageTypeError: If the received message is neither
             a Command nor an Event.
         """
-        logger.debug("Message bus processing started", extra={"message_type": type(message).__name__})
+        logger.debug(
+            "Message bus processing started",
+            extra={"message_type": type(message).__name__},
+        )
         self.queue = [message]
         while self.queue:
             current_message = self.queue.pop(0)
@@ -69,7 +71,7 @@ class MessageBus(AbstractMessageBus):
             elif isinstance(current_message, commands.Command):
                 await self.handle_command(current_message)
             else:
-                raise InvalidMessageTypeException(
+                raise InvalidMessageTypeError(
                     msg=f"{current_message} was not an Event or Command"
                 )
         logger.debug("Message bus processing complete")
@@ -86,20 +88,27 @@ class MessageBus(AbstractMessageBus):
         Args:
             event (events.Event): The event instance to be handled.
         Raises:
-            UnregisteredEventException: If no handler is registered for the
+            UnregisteredEventError: If no handler is registered for the
             event.
         """
         logger.debug("Handling event", extra={"event_type": type(event).__name__})
         handlers = self.event_handlers.get(type(event), [])
         if not handlers:
-            raise UnregisteredEventException(
+            raise UnregisteredEventError(
                 msg=f"No handlers registered for event: {type(event).__name__}"
             )
         for handler in handlers:
             await handler(event)
             new_events = list(self.uow.collect_new_events())
             self.queue.extend(new_events)
-            logger.debug("Event handled", extra={"event_type": type(event).__name__, "handler": handler.__name__, "new_events": len(new_events)})
+            logger.debug(
+                "Event handled",
+                extra={
+                    "event_type": type(event).__name__,
+                    "handler": handler.__name__,
+                    "new_events": len(new_events),
+                },
+            )
 
     async def handle_command(self, command: commands.Command):
         """
@@ -112,16 +121,22 @@ class MessageBus(AbstractMessageBus):
         Args:
             command (commands.Command): The command instance to be handled.
         Raises:
-            UnregisteredCommandException: If no handler is registered for the
+            UnregisteredCommandError: If no handler is registered for the
             command.
         """
         logger.debug("Handling command", extra={"command_type": type(command).__name__})
         handler = self.command_handlers.get(type(command))
         if not handler:
-            raise UnregisteredCommandException(
+            raise UnregisteredCommandError(
                 msg=f"No handler registered for command: {type(command).__name__}"
             )
         await handler(command)
         new_events = list(self.uow.collect_new_events())
         self.queue.extend(new_events)
-        logger.debug("Command handled", extra={"command_type": type(command).__name__, "new_events": len(new_events)})
+        logger.debug(
+            "Command handled",
+            extra={
+                "command_type": type(command).__name__,
+                "new_events": len(new_events),
+            },
+        )

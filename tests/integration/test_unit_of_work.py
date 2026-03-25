@@ -1,12 +1,10 @@
 import pytest
-from src.application.unit_of_work import SqlAlchemyUnitOfWork
-from src.domain.model import IpSource
+
 from src.domain.events import IpSourceCreated
-from src.domain.value_objects import IpSourceID
+from src.domain.model import IpSource
 
 
 class TestCommitAndRollback:
-
     async def test_commit_persists_changes(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -27,7 +25,6 @@ class TestCommitAndRollback:
 
 
 class TestEventCollection:
-
     async def test_collect_new_events_yields_events(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -45,12 +42,16 @@ class TestEventCollection:
 
     async def test_multiple_sources_events_collected(self, uow):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60,
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60,
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         async with uow:
             await uow.ip_sources.add(source1)

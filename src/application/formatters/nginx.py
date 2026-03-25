@@ -1,6 +1,7 @@
 """Nginx output formatter."""
 
 from src.domain.value_objects import CIDRBlock
+
 from .base import AbstractFormatter
 
 

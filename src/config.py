@@ -1,8 +1,9 @@
 """Application settings, seed source configuration, and logging setup."""
 
-import yaml
 import logging.config
 from pathlib import Path
+
+import yaml
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 

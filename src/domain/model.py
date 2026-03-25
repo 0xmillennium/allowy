@@ -1,18 +1,27 @@
-from datetime import datetime, timezone, timedelta
-from sqlalchemy.orm import reconstructor
-from src.domain.value_objects import (
-    IpSourceID, SourceName, SourceUrl, SourceType,
-    SourceStatus, SyncInterval, CIDRBlock, IPVersion,
-)
-from src.domain.events import (
-    IpSourceCreated, IpRangesUpdated, SyncIntervalUpdated,
-    IpSourcePaused, IpSourceResumed, IpSourceDeleted,
-)
+from datetime import datetime, timedelta, timezone
 
+from sqlalchemy.orm import reconstructor
+
+from src.domain.events import (
+    IpRangesUpdated,
+    IpSourceCreated,
+    IpSourcePaused,
+    IpSourceResumed,
+    SyncIntervalUpdated,
+)
+from src.domain.value_objects import (
+    CIDRBlock,
+    IpSourceID,
+    IPVersion,
+    SourceName,
+    SourceStatus,
+    SourceType,
+    SourceUrl,
+    SyncInterval,
+)
 
 
 class IpRange:
-
     def __init__(
         self,
         source_id: IpSourceID,
@@ -35,7 +44,6 @@ class IpRange:
 
 
 class IpSource:
-
     def __init__(
         self,
         id: IpSourceID,
@@ -95,8 +103,7 @@ class IpSource:
             self.updated_at = datetime.now(timezone.utc)
         else:
             self.ip_ranges = [
-                IpRange.create(source_id=self.id, cidr=cidr)
-                for cidr in new_ranges
+                IpRange.create(source_id=self.id, cidr=cidr) for cidr in new_ranges
             ]
             self.fetched_at = datetime.now(timezone.utc)
             self.status = SourceStatus.SYNCED
@@ -109,7 +116,12 @@ class IpSource:
             return
         self.sync_interval = new_interval
         self.updated_at = datetime.now(timezone.utc)
-        self.events.append(SyncIntervalUpdated(source_id=self.id, new_interval=self.sync_interval))
+        self.events.append(
+            SyncIntervalUpdated(
+                source_id=self.id,
+                new_interval=self.sync_interval,
+            )
+        )
 
     def update_name(self, new_name: str) -> None:
         new_name = SourceName(value=new_name)
@@ -147,7 +159,8 @@ class IpSource:
     def is_due_for_sync(self) -> bool:
         if self.fetched_at is None:
             return True
-        return datetime.now(timezone.utc) >= (self.fetched_at + timedelta(minutes=self.sync_interval.value))
+        next_sync = self.fetched_at + timedelta(minutes=self.sync_interval.value)
+        return datetime.now(timezone.utc) >= next_sync
 
     @property
     def ipv4_ranges(self) -> list[IpRange]:

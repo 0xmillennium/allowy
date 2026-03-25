@@ -1,8 +1,4 @@
-import pytest
-
-
 class TestLiveness:
-
     async def test_live_returns_200(self, client):
         response = await client.get("/health/live")
         assert response.status_code == 200
@@ -10,7 +6,6 @@ class TestLiveness:
 
 
 class TestReadiness:
-
     async def test_ready_returns_200_when_all_healthy(self, client):
         response = await client.get("/health/ready")
         assert response.status_code == 200

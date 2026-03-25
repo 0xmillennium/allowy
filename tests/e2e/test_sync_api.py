@@ -1,8 +1,4 @@
-import pytest
-
-
 class TestSyncIpSource:
-
     async def test_sync_returns_200(self, client):
         await client.post(
             "/ip-sources",
@@ -25,7 +21,5 @@ class TestSyncIpSource:
         assert len(data["ip_ranges"]) > 0
 
     async def test_sync_not_found_returns_404(self, client):
-        response = await client.post(
-            "/sync/00000000-0000-0000-0000-000000000000"
-        )
+        response = await client.post("/sync/00000000-0000-0000-0000-000000000000")
         assert response.status_code == 404

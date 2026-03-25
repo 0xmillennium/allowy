@@ -1,8 +1,4 @@
-import pytest
-
-
 class TestConfigEndpoints:
-
     async def test_get_nginx_config_returns_200(self, client, fake_filer):
         await fake_filer.write("allow 192.168.1.0/24;\ndeny all;", "nginx.conf")
         response = await client.get("/configs/nginx")

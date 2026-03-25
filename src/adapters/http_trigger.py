@@ -1,9 +1,11 @@
 """HTTP-based sync trigger that dispatches sync requests via POST."""
 
 import logging
+
 import httpx
+
+from src.core.exceptions.exceptions import SyncTriggerError
 from src.core.ports.trigger import AbstractSyncTrigger
-from src.core.exceptions.exceptions import SyncTriggerException
 
 logger = logging.getLogger(__name__)
 
@@ -20,4 +22,6 @@ class HttpSyncTrigger(AbstractSyncTrigger):
             response = await self._client.post(f"/sync/{source_id}")
             response.raise_for_status()
         except Exception as e:
-            raise SyncTriggerException(msg=f"Failed to trigger sync for {source_id}: {e}") from e
+            raise SyncTriggerError(
+                msg=f"Failed to trigger sync for {source_id}: {e}"
+            ) from e

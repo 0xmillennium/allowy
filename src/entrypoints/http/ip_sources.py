@@ -1,23 +1,28 @@
 """HTTP endpoints for IP source CRUD and lifecycle operations."""
 
-from fastapi import APIRouter, HTTPException, status, Depends
-from src.entrypoints.http.schemas import IpSourceSchema
-from src.application.views import get_ip_source, get_all_ip_sources, get_supported_source_types
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.application.messagebus import AbstractMessageBus
+from src.application.views import (
+    get_all_ip_sources,
+    get_ip_source,
+    get_supported_source_types,
+)
+from src.core.ports.fetcher import AbstractIPFetcher
 from src.domain.commands import (
     CreateIpSource,
+    DeleteIpSource,
+    PauseAllIpSources,
+    PauseIpSource,
+    ResumeAllIpSources,
+    ResumeIpSource,
     SourceData,
     UpdateSourceName,
     UpdateSourceType,
     UpdateSyncInterval,
-    DeleteIpSource,
-    PauseIpSource,
-    ResumeIpSource,
-    PauseAllIpSources,
-    ResumeAllIpSources,
 )
-from src.core.ports.fetcher import AbstractIPFetcher
-from src.application.messagebus import AbstractMessageBus
-from src.entrypoints.http.dependencies import get_messagebus, get_uow, get_fetcher
+from src.entrypoints.http.dependencies import get_fetcher, get_messagebus, get_uow
+from src.entrypoints.http.schemas import IpSourceSchema
 
 router = APIRouter(prefix="/ip-sources", tags=["ip-sources"])
 
@@ -63,7 +68,10 @@ async def retrieve_ip_source(
 ) -> IpSourceSchema:
     result = await get_ip_source(source_id=source_id, uow=uow)
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="IpSource not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="IpSource not found",
+        )
     return result
 
 

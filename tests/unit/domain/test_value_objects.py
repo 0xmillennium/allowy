@@ -1,18 +1,17 @@
 import pytest
-from datetime import datetime, timezone, timedelta
 from pydantic import ValidationError
+
 from src.domain.value_objects import (
+    CIDRBlock,
     IpSourceID,
+    IPVersion,
     SourceName,
     SourceUrl,
     SyncInterval,
-    CIDRBlock,
-    IPVersion,
 )
 
 
 class TestIpSourceID:
-
     def test_valid_uuid(self):
         id = IpSourceID.create()
         assert id.value is not None
@@ -23,7 +22,6 @@ class TestIpSourceID:
 
 
 class TestSourceName:
-
     def test_valid_name(self):
         name = SourceName(value="Googlebot")
         assert name.value == "Googlebot"
@@ -52,7 +50,6 @@ class TestSourceName:
 
 
 class TestSourceUrl:
-
     def test_valid_http_url(self):
         url = SourceUrl(value="http://example.com")
         assert url.value == "http://example.com"
@@ -75,7 +72,6 @@ class TestSourceUrl:
 
 
 class TestSyncInterval:
-
     def test_valid_interval(self):
         interval = SyncInterval(value=60)
         assert interval.value == 60
@@ -102,7 +98,6 @@ class TestSyncInterval:
 
 
 class TestCIDRBlock:
-
     def test_valid_ipv4_cidr(self):
         cidr = CIDRBlock(value="192.168.1.0/24")
         assert cidr.value == "192.168.1.0/24"

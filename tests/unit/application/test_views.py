@@ -1,11 +1,8 @@
-import pytest
-from src.application.views import get_ip_source, get_all_ip_sources, get_config
+from src.application.views import get_all_ip_sources, get_config, get_ip_source
 from src.domain.value_objects import SourceStatus
-from tests.fakes import FakeUnitOfWork, FakeFileOperator
 
 
 class TestGetIpSource:
-
     async def test_returns_schema_for_existing_source(
         self, fake_uow_with_source, sample_source
     ):
@@ -24,9 +21,7 @@ class TestGetIpSource:
         )
         assert result is None
 
-    async def test_returns_correct_status(
-        self, fake_uow_with_source, sample_source
-    ):
+    async def test_returns_correct_status(self, fake_uow_with_source, sample_source):
         result = await get_ip_source(
             source_id=sample_source.id.value,
             uow=fake_uow_with_source,
@@ -53,7 +48,6 @@ class TestGetIpSource:
 
 
 class TestGetAllIpSources:
-
     async def test_returns_empty_list_when_no_sources(self, fake_uow):
         result = await get_all_ip_sources(uow=fake_uow)
         assert result == []
@@ -62,16 +56,13 @@ class TestGetAllIpSources:
         result = await get_all_ip_sources(uow=fake_uow_with_source)
         assert len(result) == 1
 
-    async def test_returns_correct_schema(
-        self, fake_uow_with_source, sample_source
-    ):
+    async def test_returns_correct_schema(self, fake_uow_with_source, sample_source):
         result = await get_all_ip_sources(uow=fake_uow_with_source)
         assert result[0].id == sample_source.id.value
         assert result[0].name == sample_source.name.value
 
 
 class TestGetConfig:
-
     async def test_returns_file_content(self, fake_filer):
         await fake_filer.write("allow 192.168.1.0/24;", "nginx.conf")
         result = await get_config(filename="nginx.conf", filer=fake_filer)

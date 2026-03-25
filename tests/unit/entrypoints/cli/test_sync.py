@@ -9,13 +9,10 @@ BASE = "http://localhost:8000"
 
 
 class TestSyncTrigger:
-
     @respx.mock
     def test_trigger_success(self):
         source_id = "550e8400-e29b-41d4-a716-446655440000"
-        respx.post(f"{BASE}/sync/{source_id}").mock(
-            return_value=httpx.Response(200)
-        )
+        respx.post(f"{BASE}/sync/{source_id}").mock(return_value=httpx.Response(200))
         result = runner.invoke(app, ["sync", "trigger", source_id])
         assert result.exit_code == 0
         assert "triggered successfully" in result.output
@@ -25,7 +22,12 @@ class TestSyncTrigger:
         source_id = "nonexistent"
         respx.post(f"{BASE}/sync/{source_id}").mock(
             return_value=httpx.Response(
-                404, json={"code": 404, "msg": "IpSource not found", "type": "domain_error"}
+                404,
+                json={
+                    "code": 404,
+                    "msg": "IpSource not found",
+                    "type": "domain_error",
+                },
             )
         )
         result = runner.invoke(app, ["sync", "trigger", source_id])

@@ -1,16 +1,17 @@
 """SQLAlchemy table definitions and custom column types."""
 
 from datetime import timezone
-from sqlalchemy import TypeDecorator, DateTime
+
 from sqlalchemy import (
     Column,
-    MetaData,
-    String,
-    Integer,
     DateTime,
     ForeignKey,
+    Integer,
+    MetaData,
+    PrimaryKeyConstraint,
+    String,
     Table,
-    PrimaryKeyConstraint
+    TypeDecorator,
 )
 
 

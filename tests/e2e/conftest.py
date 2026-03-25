@@ -1,20 +1,26 @@
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from src.bootstrap import bootstrap
+from src.core.exceptions.handlers import EXCEPTION_HANDLERS
+from src.entrypoints.http.configs import router as config_router
+from src.entrypoints.http.dependencies import (
+    get_fetcher,
+    get_filer,
+    get_messagebus,
+    get_scheduler,
+    get_uow,
+)
+from src.entrypoints.http.health import router as health_router
 from src.entrypoints.http.ip_sources import router as ip_sources_router
 from src.entrypoints.http.sync import router as sync_router
-from src.entrypoints.http.configs import router as config_router
-from src.entrypoints.http.health import router as health_router
-from src.entrypoints.http.dependencies import get_messagebus, get_uow, get_filer, get_scheduler, get_fetcher
-from src.core.exceptions.handlers import EXCEPTION_HANDLERS
 from tests.fakes import (
-    FakeUnitOfWork,
-    FakeScheduler,
     FakeFetcher,
-    FakeTrigger,
     FakeFileOperator,
+    FakeScheduler,
+    FakeTrigger,
+    FakeUnitOfWork,
 )
 
 

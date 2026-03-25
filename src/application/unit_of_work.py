@@ -1,9 +1,11 @@
 """SQLAlchemy implementation of the unit of work pattern."""
 
 import logging
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from src.core.ports.unit_of_work import AbstractUnitOfWork
+
 from src.adapters.database.repository import SqlAlchemyIpSourceRepository
+from src.core.ports.unit_of_work import AbstractUnitOfWork
 
 logger = logging.getLogger(__name__)
 

@@ -35,10 +35,7 @@ def list_sources(ctx: typer.Context) -> None:
         for s in sources
     ]
 
-    widths = [
-        max(len(h), *(len(r[i]) for r in rows))
-        for i, h in enumerate(headers)
-    ]
+    widths = [max(len(h), *(len(r[i]) for r in rows)) for i, h in enumerate(headers)]
 
     header_line = "  ".join(h.ljust(w) for h, w in zip(headers, widths))
     typer.echo(header_line)
@@ -72,7 +69,9 @@ def create(
     name: str = typer.Option(..., help="Source name."),
     url: str = typer.Option(..., help="Source URL."),
     source_type: str = typer.Option(..., "--type", help="Source type."),
-    sync_interval: int = typer.Option(..., "--interval", help="Sync interval in minutes."),
+    sync_interval: int = typer.Option(
+        ..., "--interval", help="Sync interval in minutes."
+    ),
 ) -> None:
     """Create a new IP source."""
     client, _ = _get_client(ctx)
@@ -139,7 +138,9 @@ def update_type(
 def update_interval(
     ctx: typer.Context,
     source_id: str = typer.Argument(help="Source ID."),
-    sync_interval: int = typer.Option(..., "--interval", help="New sync interval in minutes."),
+    sync_interval: int = typer.Option(
+        ..., "--interval", help="New sync interval in minutes."
+    ),
 ) -> None:
     """Update sync interval of an IP source."""
     client, _ = _get_client(ctx)

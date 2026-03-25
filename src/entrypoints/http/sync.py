@@ -1,8 +1,9 @@
 """HTTP endpoint for triggering IP source sync."""
 
-from fastapi import APIRouter, status, Depends
-from src.domain.commands import SyncIpSource
+from fastapi import APIRouter, Depends, status
+
 from src.application.messagebus import AbstractMessageBus
+from src.domain.commands import SyncIpSource
 from src.entrypoints.http.dependencies import get_messagebus
 
 router = APIRouter(prefix="/sync", tags=["sync"])

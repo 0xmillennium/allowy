@@ -5,9 +5,9 @@ import typer
 from src.config import settings
 from src.entrypoints.cli.config import app as config_app
 from src.entrypoints.cli.health import app as health_app
+from src.entrypoints.cli.init import app as init_app
 from src.entrypoints.cli.source import app as source_app
 from src.entrypoints.cli.sync import app as sync_app
-from src.entrypoints.cli.init import app as init_app
 
 app = typer.Typer(name="allowy", help="Allowy CLI.", no_args_is_help=True)
 

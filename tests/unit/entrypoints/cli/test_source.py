@@ -22,7 +22,6 @@ SAMPLE_SOURCE = {
 
 
 class TestListSources:
-
     @respx.mock
     def test_list_prints_table(self):
         respx.get(f"{BASE}/ip-sources").mock(
@@ -37,16 +36,13 @@ class TestListSources:
 
     @respx.mock
     def test_list_empty(self):
-        respx.get(f"{BASE}/ip-sources").mock(
-            return_value=httpx.Response(200, json=[])
-        )
+        respx.get(f"{BASE}/ip-sources").mock(return_value=httpx.Response(200, json=[]))
         result = runner.invoke(app, ["source", "list"])
         assert result.exit_code == 0
         assert "No sources found" in result.output
 
 
 class TestGetSource:
-
     @respx.mock
     def test_get_prints_details(self):
         source_id = SAMPLE_SOURCE["id"]
@@ -64,7 +60,12 @@ class TestGetSource:
         source_id = "nonexistent"
         respx.get(f"{BASE}/ip-sources/{source_id}").mock(
             return_value=httpx.Response(
-                404, json={"code": 404, "msg": "IpSource not found", "type": "http_error"}
+                404,
+                json={
+                    "code": 404,
+                    "msg": "IpSource not found",
+                    "type": "http_error",
+                },
             )
         )
         result = runner.invoke(app, ["source", "get", source_id])
@@ -72,20 +73,22 @@ class TestGetSource:
 
 
 class TestCreateSource:
-
     @respx.mock
     def test_create_success(self):
-        respx.post(f"{BASE}/ip-sources").mock(
-            return_value=httpx.Response(201)
-        )
+        respx.post(f"{BASE}/ip-sources").mock(return_value=httpx.Response(201))
         result = runner.invoke(
             app,
             [
-                "source", "create",
-                "--name", "Test",
-                "--url", "https://example.com/ips.json",
-                "--type", "google",
-                "--interval", "30",
+                "source",
+                "create",
+                "--name",
+                "Test",
+                "--url",
+                "https://example.com/ips.json",
+                "--type",
+                "google",
+                "--interval",
+                "30",
             ],
         )
         assert result.exit_code == 0
@@ -93,7 +96,6 @@ class TestCreateSource:
 
 
 class TestDeleteSource:
-
     @respx.mock
     def test_delete_success(self):
         source_id = SAMPLE_SOURCE["id"]
@@ -106,7 +108,6 @@ class TestDeleteSource:
 
 
 class TestUpdateName:
-
     @respx.mock
     def test_update_name_success(self):
         source_id = SAMPLE_SOURCE["id"]
@@ -121,7 +122,6 @@ class TestUpdateName:
 
 
 class TestUpdateType:
-
     @respx.mock
     def test_update_type_success(self):
         source_id = SAMPLE_SOURCE["id"]
@@ -136,7 +136,6 @@ class TestUpdateType:
 
 
 class TestUpdateInterval:
-
     @respx.mock
     def test_update_interval_success(self):
         source_id = SAMPLE_SOURCE["id"]
@@ -151,7 +150,6 @@ class TestUpdateInterval:
 
 
 class TestPauseResume:
-
     @respx.mock
     def test_pause_success(self):
         source_id = SAMPLE_SOURCE["id"]

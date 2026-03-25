@@ -1,12 +1,14 @@
 """Wires handlers with dependencies and assembles the message bus."""
 
 import inspect
+
 from src.application import handlers, messagebus
 from src.core.ports.fetcher import AbstractIPFetcher
-from src.core.ports.trigger import AbstractSyncTrigger
-from src.core.ports.scheduler import AbstractScheduler
-from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.core.ports.file_operator import AbstractFileOperator
+from src.core.ports.scheduler import AbstractScheduler
+from src.core.ports.trigger import AbstractSyncTrigger
+from src.core.ports.unit_of_work import AbstractUnitOfWork
+
 
 def bootstrap(
     filer: AbstractFileOperator,
@@ -15,7 +17,10 @@ def bootstrap(
     uow: AbstractUnitOfWork,
     trigger: AbstractSyncTrigger,
 ) -> messagebus.MessageBus:
-    """Assembles a fully wired message bus by injecting dependencies into all handlers."""
+    """Assembles a fully wired message bus.
+
+    Injects dependencies into all handlers.
+    """
     dependencies = {
         "uow": uow,
         "filer": filer,
@@ -25,8 +30,7 @@ def bootstrap(
     }
     injected_event_handlers = {
         event_type: [
-            inject_dependencies(handler, dependencies)
-            for handler in event_handlers
+            inject_dependencies(handler, dependencies) for handler in event_handlers
         ]
         for event_type, event_handlers in handlers.EVENT_HANDLERS.items()
     }
@@ -45,8 +49,6 @@ def bootstrap(
 def inject_dependencies(handler, dependencies):
     params = inspect.signature(handler).parameters
     deps = {
-        name: dependency
-        for name, dependency in dependencies.items()
-        if name in params
+        name: dependency for name, dependency in dependencies.items() if name in params
     }
     return lambda message: handler(message, **deps)

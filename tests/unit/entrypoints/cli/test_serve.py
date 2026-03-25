@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
@@ -8,7 +8,6 @@ runner = CliRunner()
 
 
 class TestServe:
-
     @patch.dict("sys.modules", {"uvicorn": MagicMock()})
     def test_serve_calls_uvicorn_with_defaults(self):
         import sys
@@ -31,7 +30,6 @@ class TestServe:
 
 
 class TestVersion:
-
     def test_version_prints_version(self):
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0

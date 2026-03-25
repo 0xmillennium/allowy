@@ -1,10 +1,12 @@
 """Local filesystem implementation of the file operator port."""
 
 import logging
-import aiofiles
 from pathlib import Path
+
+import aiofiles
+
+from src.core.exceptions.exceptions import FileReadError, FileWriteError
 from src.core.ports.file_operator import AbstractFileOperator
-from src.core.exceptions.exceptions import FileReadException, FileWriteException
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +20,16 @@ class LocalFileOperator(AbstractFileOperator):
 
     async def write(self, content: str, filename: str) -> None:
         path = self._output_dir / filename
-        logger.debug("Writing output file", extra={"path": str(path), "content_length": len(content)})
+        logger.debug(
+            "Writing output file",
+            extra={"path": str(path), "content_length": len(content)},
+        )
         try:
             async with aiofiles.open(path, mode="w") as f:
                 await f.write(content)
             logger.info("Output written", extra={"path": str(path)})
         except OSError as e:
-            raise FileWriteException(msg=str(e))
+            raise FileWriteError(msg=str(e))
 
     async def read(self, filename: str) -> str:
         path = self._output_dir / filename
@@ -32,4 +37,4 @@ class LocalFileOperator(AbstractFileOperator):
             async with aiofiles.open(path, mode="r") as f:
                 return await f.read()
         except OSError as e:
-            raise FileReadException(msg=str(e))
+            raise FileReadError(msg=str(e))

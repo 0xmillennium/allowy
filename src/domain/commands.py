@@ -1,22 +1,16 @@
-from uuid import UUID, uuid4
-from typing import Annotated
-from pydantic import Field
 from datetime import datetime, timezone
+from typing import Annotated
+from uuid import UUID, uuid4
+
+from pydantic import Field
 from pydantic.dataclasses import dataclass
-from src.domain.value_objects import IpSourceID, SourceName, SourceUrl, SourceType, SyncInterval
 
 
 @dataclass(kw_only=True, frozen=True)
 class Command:
-    command_id: Annotated[
-        UUID,
-        Field(default_factory=uuid4)
-    ]
+    command_id: Annotated[UUID, Field(default_factory=uuid4)]
     timestamp: Annotated[
-        str,
-        Field(
-            default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
-        )
+        str, Field(default_factory=lambda: datetime.now(tz=timezone.utc).isoformat())
     ]
 
 

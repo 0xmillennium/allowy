@@ -2,6 +2,7 @@
 
 import json
 import logging
+
 from src.core.ports.parser import AbstractResponseParser
 from src.domain.value_objects import CIDRBlock
 
@@ -20,5 +21,11 @@ class GoogleJsonParser(AbstractResponseParser):
                 try:
                     ranges.append(CIDRBlock(value=raw))
                 except Exception as e:
-                    logger.warning("Skipping invalid CIDR", extra={"raw_cidr": raw, "error": str(e)})
+                    logger.warning(
+                        "Skipping invalid CIDR",
+                        extra={
+                            "raw_cidr": raw,
+                            "error": str(e),
+                        },
+                    )
         return ranges

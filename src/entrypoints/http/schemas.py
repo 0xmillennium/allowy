@@ -1,7 +1,7 @@
 """Response schemas for HTTP API endpoints."""
 
 from dataclasses import dataclass
-from typing import Optional
+
 from src.domain.model import IpSource
 
 

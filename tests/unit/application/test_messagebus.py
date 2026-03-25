@@ -1,14 +1,15 @@
 import pytest
+
 from src.application.messagebus import MessageBus
+from src.core.exceptions.exceptions import (
+    InvalidMessageTypeError,
+    UnregisteredCommandError,
+    UnregisteredEventError,
+)
 from src.domain.commands import CreateIpSource, SourceData
 from src.domain.events import IpRangesUpdated, IpSourceCreated
 from src.domain.model import IpSource
-from src.domain.value_objects import IpSourceID, CIDRBlock
-from src.core.exceptions.exceptions import (
-    UnregisteredCommandException,
-    UnregisteredEventException,
-    InvalidMessageTypeException,
-)
+from src.domain.value_objects import IpSourceID
 
 
 @pytest.fixture
@@ -17,7 +18,6 @@ def source_id() -> IpSourceID:
 
 
 class TestMessageBusCommands:
-
     async def test_command_dispatched_to_correct_handler(self, fake_uow):
         handled = []
 
@@ -55,12 +55,11 @@ class TestMessageBusCommands:
                 sync_interval=60,
             )
         )
-        with pytest.raises(UnregisteredCommandException):
+        with pytest.raises(UnregisteredCommandError):
             await mbus.handle(cmd)
 
 
 class TestMessageBusEvents:
-
     async def test_event_dispatched_to_all_handlers(self, fake_uow, source_id):
         handled = []
 
@@ -87,7 +86,7 @@ class TestMessageBusEvents:
             event_handlers={},
         )
         event = IpRangesUpdated(source_id=source_id)
-        with pytest.raises(UnregisteredEventException):
+        with pytest.raises(UnregisteredEventError):
             await mbus.handle(event)
 
     async def test_new_events_collected_after_command(self, fake_uow):
@@ -124,12 +123,11 @@ class TestMessageBusEvents:
 
 
 class TestMessageBusInvalidMessage:
-
     async def test_invalid_message_type_raises(self, fake_uow):
         mbus = MessageBus(
             uow=fake_uow,
             command_handlers={},
             event_handlers={},
         )
-        with pytest.raises(InvalidMessageTypeException):
+        with pytest.raises(InvalidMessageTypeError):
             await mbus.handle("not-a-command-or-event")

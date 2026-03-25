@@ -1,8 +1,4 @@
-import pytest
-
-
 class TestCreateIpSource:
-
     async def test_create_returns_201(self, client):
         response = await client.post(
             "/ip-sources",
@@ -59,7 +55,6 @@ class TestCreateIpSource:
 
 
 class TestListIpSources:
-
     async def test_list_returns_200_with_list(self, client):
         await client.post(
             "/ip-sources",
@@ -83,9 +78,8 @@ class TestListIpSources:
 
 
 class TestRetrieveIpSource:
-
     async def test_get_returns_200(self, client):
-        create_resp = await client.post(
+        await client.post(
             "/ip-sources",
             params={
                 "name": "Googlebot",
@@ -104,14 +98,11 @@ class TestRetrieveIpSource:
         assert data["sync_interval"] == 60
 
     async def test_get_not_found_returns_404(self, client):
-        response = await client.get(
-            "/ip-sources/00000000-0000-0000-0000-000000000000"
-        )
+        response = await client.get("/ip-sources/00000000-0000-0000-0000-000000000000")
         assert response.status_code == 404
 
 
 class TestDeleteIpSource:
-
     async def test_delete_returns_204(self, client):
         await client.post(
             "/ip-sources",
@@ -136,7 +127,6 @@ class TestDeleteIpSource:
 
 
 class TestUpdateSyncInterval:
-
     async def test_update_interval_returns_200(self, client):
         await client.post(
             "/ip-sources",
@@ -162,7 +152,6 @@ class TestUpdateSyncInterval:
 
 
 class TestPauseResume:
-
     async def test_pause_returns_200(self, client):
         await client.post(
             "/ip-sources",

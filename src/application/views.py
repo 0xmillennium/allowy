@@ -1,10 +1,10 @@
 """Read-only query functions for retrieving IP source data."""
 
-from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.core.ports.fetcher import AbstractIPFetcher
+from src.core.ports.file_operator import AbstractFileOperator
+from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.domain.value_objects import IpSourceID
 from src.entrypoints.http.schemas import IpSourceSchema
-from src.core.ports.file_operator import AbstractFileOperator
 
 
 async def get_ip_source(

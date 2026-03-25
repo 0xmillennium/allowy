@@ -1,14 +1,15 @@
 """FastAPI dependency injection factories for request-scoped services."""
 
 from fastapi import Request
+
 from src.application.messagebus import AbstractMessageBus
 from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.bootstrap import bootstrap
 from src.config import SourcesConfig, sources_config
-from src.core.ports.unit_of_work import AbstractUnitOfWork
+from src.core.ports.fetcher import AbstractIPFetcher
 from src.core.ports.file_operator import AbstractFileOperator
 from src.core.ports.scheduler import AbstractScheduler
-from src.core.ports.fetcher import AbstractIPFetcher
+from src.core.ports.unit_of_work import AbstractUnitOfWork
 
 
 def get_messagebus(request: Request) -> AbstractMessageBus:
@@ -21,6 +22,7 @@ def get_messagebus(request: Request) -> AbstractMessageBus:
         filer=request.app.state.filer,
         trigger=request.app.state.trigger,
     )
+
 
 def get_uow(request: Request) -> AbstractUnitOfWork:
     return SqlAlchemyUnitOfWork(session_factory=request.app.state.session_factory)

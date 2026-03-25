@@ -9,7 +9,6 @@ BASE = "http://localhost:8000"
 
 
 class TestLive:
-
     @respx.mock
     def test_live_healthy_exits_0(self):
         respx.get(f"{BASE}/health/live").mock(
@@ -29,7 +28,6 @@ class TestLive:
 
 
 class TestReady:
-
     @respx.mock
     def test_ready_healthy_exits_0(self):
         respx.get(f"{BASE}/health/ready").mock(

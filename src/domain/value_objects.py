@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Annotated
 from ipaddress import ip_network
-from datetime import datetime, timezone
+from typing import Annotated
+
 from pydantic import Field, field_validator
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 
@@ -16,17 +16,14 @@ class BaseValueObject:
 
 @pydantic_dataclass(frozen=True)
 class SourceType(BaseValueObject):
-    value: Annotated[
-        str,
-        Field(min_length=1, max_length=50)
-    ]
+    value: Annotated[str, Field(min_length=1, max_length=50)]
 
 
 class SourceStatus(str, Enum):
     CREATED = "created"
-    SYNCED  = "synced"
-    FAILED  = "failed"
-    PAUSED  = "paused"
+    SYNCED = "synced"
+    FAILED = "failed"
+    PAUSED = "paused"
 
     def __composite_values__(self):
         return (self.value,)
@@ -44,47 +41,38 @@ class IPVersion(str, Enum):
 class IpSourceID(BaseValueObject):
     value: Annotated[
         str,
-        Field(pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+        Field(
+            pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        ),
     ]
 
     @classmethod
     def create(cls) -> "IpSourceID":
         import uuid
+
         return cls(value=str(uuid.uuid4()))
 
 
 @pydantic_dataclass(frozen=True)
 class SourceName(BaseValueObject):
-    value: Annotated[
-        str,
-        Field(min_length=1, max_length=100)
-    ]
+    value: Annotated[str, Field(min_length=1, max_length=100)]
 
 
 @pydantic_dataclass(frozen=True)
 class SourceUrl(BaseValueObject):
-    value: Annotated[
-        str,
-        Field(pattern=r'^https?://.+')
-    ]
+    value: Annotated[str, Field(pattern=r"^https?://.+")]
 
 
 @pydantic_dataclass(frozen=True)
 class SyncInterval(BaseValueObject):
     MIN_INTERVAL_MINUTES = 5
 
-    value: Annotated[
-        int,
-        Field(ge=MIN_INTERVAL_MINUTES)
-    ]
+    value: Annotated[int, Field(ge=MIN_INTERVAL_MINUTES)]
 
 
 @pydantic_dataclass(frozen=True)
 class CIDRBlock(BaseValueObject):
-    value: Annotated[
-        str,
-        Field(min_length=1)
-    ]
+    value: Annotated[str, Field(min_length=1)]
 
     @field_validator("value")
     @classmethod
@@ -103,7 +91,4 @@ class CIDRBlock(BaseValueObject):
 
 @pydantic_dataclass(frozen=True)
 class FailureReason(BaseValueObject):
-    value: Annotated[
-        str,
-        Field(min_length=1, max_length=500)
-    ]
+    value: Annotated[str, Field(min_length=1, max_length=500)]

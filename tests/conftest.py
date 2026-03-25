@@ -1,11 +1,12 @@
 import pytest
+
 from src.domain.model import IpSource
 from tests.fakes import (
-    FakeUnitOfWork,
-    FakeScheduler,
     FakeFetcher,
-    FakeTrigger,
     FakeFileOperator,
+    FakeScheduler,
+    FakeTrigger,
+    FakeUnitOfWork,
 )
 
 

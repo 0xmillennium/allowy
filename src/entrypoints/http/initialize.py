@@ -1,9 +1,10 @@
 """HTTP endpoint for application initialization."""
 
-from fastapi import APIRouter, status, Depends
-from src.domain.commands import InitializeApplication, SourceData
-from src.config import SourcesConfig
+from fastapi import APIRouter, Depends, status
+
 from src.application.messagebus import AbstractMessageBus
+from src.config import SourcesConfig
+from src.domain.commands import InitializeApplication, SourceData
 from src.entrypoints.http.dependencies import get_messagebus, get_sources_config
 
 router = APIRouter(tags=["initialize"])

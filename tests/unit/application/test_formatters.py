@@ -1,9 +1,7 @@
-import pytest
-from src.domain.value_objects import CIDRBlock
 from src.application.formatters.nginx import NginxFormatter
-from src.application.formatters.traefik import TraefikFormatter
 from src.application.formatters.raw import RawFormatter
-
+from src.application.formatters.traefik import TraefikFormatter
+from src.domain.value_objects import CIDRBlock
 
 IPV4_RANGES = [
     CIDRBlock(value="192.168.1.0/24"),
@@ -17,7 +15,6 @@ ALL_RANGES = IPV4_RANGES + IPV6_RANGES
 
 
 class TestNginxFormatter:
-
     def test_filename(self):
         assert NginxFormatter.filename() == "nginx.conf"
 
@@ -52,7 +49,6 @@ class TestNginxFormatter:
 
 
 class TestTraefikFormatter:
-
     def test_filename(self):
         assert TraefikFormatter.filename() == "traefik.yml"
 
@@ -94,7 +90,6 @@ class TestTraefikFormatter:
 
 
 class TestRawFormatter:
-
     def test_filename(self):
         assert RawFormatter.filename() == "raw.txt"
 

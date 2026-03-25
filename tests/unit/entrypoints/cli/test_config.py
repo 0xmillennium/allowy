@@ -9,7 +9,6 @@ BASE = "http://localhost:8000"
 
 
 class TestConfigCommands:
-
     @respx.mock
     def test_nginx_prints_response_text(self):
         content = "allow 192.168.1.0/24;\nallow 2001:4860::/32;"

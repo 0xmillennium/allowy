@@ -1,19 +1,15 @@
-import pytest
-from src.application.unit_of_work import SqlAlchemyUnitOfWork
 from src.domain.model import IpSource
 from src.domain.value_objects import (
+    CIDRBlock,
     IpSourceID,
     SourceName,
-    SourceUrl,
-    SourceType,
-    SyncInterval,
     SourceStatus,
-    CIDRBlock,
+    SourceUrl,
+    SyncInterval,
 )
 
 
 class TestRepositoryAdd:
-
     async def test_add_and_get_round_trip(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -37,7 +33,6 @@ class TestRepositoryAdd:
 
 
 class TestRepositoryGetByUrl:
-
     async def test_get_by_url_returns_match(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -56,15 +51,18 @@ class TestRepositoryGetByUrl:
 
 
 class TestRepositoryGetAll:
-
     async def test_get_all_returns_all(self, uow):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60,
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         source2 = IpSource.create(
-            name="Source2", url="https://example2.com",
-            source_type="google", sync_interval=60,
+            name="Source2",
+            url="https://example2.com",
+            source_type="google",
+            sync_interval=60,
         )
         async with uow:
             await uow.ip_sources.add(source1)
@@ -81,7 +79,6 @@ class TestRepositoryGetAll:
 
 
 class TestRepositoryDelete:
-
     async def test_delete_removes_source(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -96,7 +93,6 @@ class TestRepositoryDelete:
 
 
 class TestCompositeValueObjects:
-
     async def test_value_objects_round_trip(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -110,7 +106,6 @@ class TestCompositeValueObjects:
 
 
 class TestIpRangesPersistence:
-
     async def test_ip_ranges_persisted(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -149,7 +144,6 @@ class TestIpRangesPersistence:
 
 
 class TestSeenTracking:
-
     async def test_add_marks_source_as_seen(self, uow, sample_source):
         async with uow:
             await uow.ip_sources.add(sample_source)
@@ -165,14 +159,16 @@ class TestSeenTracking:
 
     async def test_get_all_marks_sources_as_seen(self, uow):
         source1 = IpSource.create(
-            name="Source1", url="https://example1.com",
-            source_type="google", sync_interval=60,
+            name="Source1",
+            url="https://example1.com",
+            source_type="google",
+            sync_interval=60,
         )
         async with uow:
             await uow.ip_sources.add(source1)
 
         async with uow:
-            sources = await uow.ip_sources.get_all()
+            await uow.ip_sources.get_all()
             assert len(uow.ip_sources.seen) == 1
 
     async def test_source_with_null_fetched_at(self, uow, sample_source):

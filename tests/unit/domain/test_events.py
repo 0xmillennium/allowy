@@ -1,13 +1,12 @@
-import pytest
 from dataclasses import FrozenInstanceError
 from uuid import UUID
+
+import pytest
+
 from src.domain.events import (
-    IpSourceCreated,
     IpRangesUpdated,
+    IpSourceCreated,
     SyncIntervalUpdated,
-    IpSourcePaused,
-    IpSourceResumed,
-    IpSourceDeleted,
 )
 from src.domain.value_objects import IpSourceID, SyncInterval
 
@@ -18,7 +17,6 @@ def source_id() -> IpSourceID:
 
 
 class TestEventConstruction:
-
     def test_ip_source_created_has_valid_event_id(self, source_id):
         event = IpSourceCreated(source_id=source_id)
         assert isinstance(event.event_id, UUID)

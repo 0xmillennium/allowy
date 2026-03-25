@@ -1,22 +1,18 @@
-from uuid import UUID, uuid4
 from datetime import datetime, timezone
 from typing import Annotated
+from uuid import UUID, uuid4
+
 from pydantic import Field
 from pydantic.dataclasses import dataclass
+
 from src.domain.value_objects import IpSourceID, SyncInterval
 
 
 @dataclass(kw_only=True, frozen=True)
 class Event:
-    event_id: Annotated[
-        UUID,
-        Field(default_factory=uuid4)
-    ]
+    event_id: Annotated[UUID, Field(default_factory=uuid4)]
     timestamp: Annotated[
-        str,
-        Field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
-        )
+        str, Field(default_factory=lambda: datetime.now(tz=timezone.utc).isoformat())
     ]
 
 
@@ -28,6 +24,7 @@ class IpSourceCreated(Event):
 @dataclass(kw_only=True, frozen=True)
 class IpRangesUpdated(Event):
     source_id: IpSourceID
+
 
 @dataclass(kw_only=True, frozen=True)
 class IpSourceDeleted(Event):

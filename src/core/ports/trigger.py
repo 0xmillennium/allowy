@@ -18,6 +18,6 @@ class AbstractSyncTrigger(ABC):
             source_id: UUID string identifying the IP source.
 
         Raises:
-            SyncTriggerException: If the sync trigger fails.
+            SyncTriggerError: If the sync trigger fails.
         """
         ...

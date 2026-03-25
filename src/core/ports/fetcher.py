@@ -1,6 +1,8 @@
-"""Abstract fetcher defining the contract for retrieving IP ranges from upstream providers."""
+"""Abstract fetcher defining the contract for retrieving
+IP ranges from upstream providers."""
 
 from abc import ABC, abstractmethod
+
 from src.domain.model import IpSource
 from src.domain.value_objects import CIDRBlock
 
@@ -13,7 +15,7 @@ class AbstractIPFetcher(ABC):
         """Fetches current IP ranges for the given source.
 
         Raises:
-            FetcherNetworkException: If the upstream request fails.
+            FetcherNetworkError: If the upstream request fails.
         """
         ...
 

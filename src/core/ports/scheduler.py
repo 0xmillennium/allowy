@@ -1,7 +1,8 @@
 """Abstract scheduler defining the contract for managing periodic sync jobs."""
 
-from typing import Callable
 from abc import ABC, abstractmethod
+from typing import Callable
+
 from src.domain.model import IpSource
 
 

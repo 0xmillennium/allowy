@@ -1,8 +1,9 @@
 """Abstract repository defining the IP source persistence contract."""
 
 from abc import ABC, abstractmethod
+
 from src.domain.model import IpSource
-from src.domain.value_objects import IpSourceID, SourceUrl, SourceName
+from src.domain.value_objects import IpSourceID, SourceName, SourceUrl
 
 
 class AbstractIpSourceRepository(ABC):
@@ -25,7 +26,7 @@ class AbstractIpSourceRepository(ABC):
         if source:
             self.seen.add(source)
         return source
-    
+
     async def get_by_url(self, url: SourceUrl) -> IpSource | None:
         source = await self._get_by_url(url)
         if source:

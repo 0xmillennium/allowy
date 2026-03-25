@@ -1,7 +1,6 @@
 """HTTP client utilities for CLI commands."""
 
 import os
-import sys
 
 import httpx
 import typer
