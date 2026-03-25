@@ -1,0 +1,15 @@
+sources:
+  - name: "Google Common Crawlers"
+    url: "https://developers.google.com/static/search/apis/ipranges/googlebot.json"
+    source_type: "google"
+    sync_interval: 5
+
+  - name: "Google Special Crawlers"
+    url: "https://developers.google.com/static/search/apis/ipranges/special-crawlers.json"
+    source_type: "google"
+    sync_interval: 5
+
+  - name: "Google User Triggered Fetchers"
+    url: "https://developers.google.com/static/search/apis/ipranges/user-triggered-fetchers-google.json"
+    source_type: "google"
+    sync_interval: 5

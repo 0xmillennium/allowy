@@ -1,0 +1,18 @@
+services:
+  allowy:
+    build: .
+    ports:
+      - "${SERVER_PORT:-8000}:8000"
+    volumes:
+      - ./config:/app/config
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "allowy", "health", "live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
