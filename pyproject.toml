@@ -76,6 +76,7 @@ fail_under = 80
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
+warn_unused_ignores = false
 
 [tool.pydantic-mypy]
 init_typed = true
