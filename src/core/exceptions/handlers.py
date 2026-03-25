@@ -97,9 +97,7 @@ async def handle_sqlalchemy_error(
     )
 
 
-async def handle_http_exception(
-    request: Request, exc: HTTPException
-) -> JSONResponse:
+async def handle_http_exception(request: Request, exc: HTTPException) -> JSONResponse:
     logger.error(
         "HTTP error",
         extra={
@@ -120,9 +118,7 @@ async def handle_http_exception(
     )
 
 
-async def handle_app_exception(
-    request: Request, exc: AppError
-) -> JSONResponse:
+async def handle_app_exception(request: Request, exc: AppError) -> JSONResponse:
     logger.error(
         "Application error",
         extra={
@@ -142,9 +138,7 @@ async def handle_app_exception(
     )
 
 
-async def handle_generic_error(
-    request: Request, exc: Exception
-) -> JSONResponse:
+async def handle_generic_error(request: Request, exc: Exception) -> JSONResponse:
     logger.error(
         "Unexpected error",
         extra={
