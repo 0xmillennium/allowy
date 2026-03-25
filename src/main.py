@@ -1,6 +1,7 @@
 """FastAPI application setup, lifecycle management, and database initialization."""
 
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import httpx
@@ -41,7 +42,7 @@ async def init_db(engine: AsyncEngine) -> None:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     engine = None
     fetcher_client = None
     trigger_client = None
@@ -122,7 +123,7 @@ def create_app() -> FastAPI:
 
     # exception handlers
     for exc_class, handler in EXCEPTION_HANDLERS.items():
-        app.add_exception_handler(exc_class, handler)
+        app.add_exception_handler(exc_class, handler)  # type: ignore[arg-type]
 
     return app
 

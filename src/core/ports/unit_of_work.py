@@ -1,6 +1,7 @@
 """Abstract unit of work defining the transaction boundary contract."""
 
 from abc import ABC, abstractmethod
+from types import TracebackType
 from typing import Generator
 
 from src.core.ports.repository import AbstractIpSourceRepository
@@ -32,7 +33,12 @@ class AbstractUnitOfWork(ABC):
     async def __aenter__(self) -> "AbstractUnitOfWork": ...
 
     @abstractmethod
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None: ...
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None: ...
 
     @abstractmethod
     async def commit(self) -> None: ...

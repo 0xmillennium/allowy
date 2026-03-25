@@ -7,7 +7,7 @@ from src.adapters.database.schema import ip_source_ranges_table, ip_sources_tabl
 mapper_registry = registry()
 
 
-def init_orm_mappers():
+def init_orm_mappers() -> None:
     from src.domain.model import IpRange, IpSource
     from src.domain.value_objects import (
         CIDRBlock,

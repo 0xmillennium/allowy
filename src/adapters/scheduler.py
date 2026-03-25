@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Callable
+from typing import Any, Callable
 
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -27,9 +27,11 @@ class APScheduler(AbstractScheduler):
             return None
         if source.is_due_for_sync:
             return datetime.now(timezone.utc)
+        if source.fetched_at is None:
+            return datetime.now(timezone.utc)
         return source.fetched_at + timedelta(minutes=source.sync_interval.value)
 
-    async def register(self, source: IpSource, job: Callable) -> None:
+    async def register(self, source: IpSource, job: Callable[..., Any]) -> None:
         logger.debug(
             "Registering scheduler job",
             extra={
@@ -101,4 +103,4 @@ class APScheduler(AbstractScheduler):
         logger.info("Scheduler stopped")
 
     def is_running(self) -> bool:
-        return self._scheduler.running
+        return bool(self._scheduler.running)

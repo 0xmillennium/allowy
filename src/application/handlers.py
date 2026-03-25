@@ -2,6 +2,7 @@
 
 import functools
 import logging
+from typing import Any, Callable, Type
 
 from src.application.formatters import FORMATTERS
 from src.core.exceptions.exceptions import (
@@ -16,6 +17,7 @@ from src.core.ports.trigger import AbstractSyncTrigger
 from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.domain import Event
 from src.domain.commands import (
+    Command,
     CreateIpSource,
     DeleteIpSource,
     InitializeApplication,
@@ -38,6 +40,7 @@ from src.domain.events import (
 )
 from src.domain.model import IpSource
 from src.domain.value_objects import (
+    CIDRBlock,
     IpSourceID,
     SourceName,
     SourceUrl,
@@ -321,7 +324,7 @@ async def handle_ip_ranges_updated(
     and writes formatted output files."""
     async with uow:
         sources = await uow.ip_sources.get_all()
-        active_ranges = set()
+        active_ranges: set[CIDRBlock] = set()
         for source in sources:
             if source.is_active:
                 active_ranges.update(ip_range.cidr for ip_range in source.ip_ranges)
@@ -343,7 +346,7 @@ async def handle_notify(event: Event) -> None:
     pass
 
 
-COMMAND_HANDLERS = {
+COMMAND_HANDLERS: dict[Type[Command], Callable[..., Any]] = {
     CreateIpSource: handle_create_ip_source,
     SyncIpSource: handle_sync_ip_source,
     DeleteIpSource: handle_delete_ip_source,
@@ -357,7 +360,7 @@ COMMAND_HANDLERS = {
     ResumeAllIpSources: handle_resume_all_ip_sources,
 }
 
-EVENT_HANDLERS = {
+EVENT_HANDLERS: dict[Type[Event], list[Callable[..., Any]]] = {
     IpRangesUpdated: [handle_ip_ranges_updated, handle_notify],
     IpSourceDeleted: [handle_ip_ranges_updated, handle_notify],
     IpSourceCreated: [handle_notify],

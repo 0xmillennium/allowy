@@ -9,6 +9,7 @@ from src.application.views import (
     get_supported_source_types,
 )
 from src.core.ports.fetcher import AbstractIPFetcher
+from src.core.ports.unit_of_work import AbstractUnitOfWork
 from src.domain.commands import (
     CreateIpSource,
     DeleteIpSource,
@@ -56,7 +57,7 @@ async def list_supported_source_types(
 
 @router.get("", response_model=list[IpSourceSchema])
 async def list_ip_sources(
-    uow=Depends(get_uow),
+    uow: AbstractUnitOfWork = Depends(get_uow),
 ) -> list[IpSourceSchema]:
     return await get_all_ip_sources(uow=uow)
 
@@ -64,7 +65,7 @@ async def list_ip_sources(
 @router.get("/{source_id}", response_model=IpSourceSchema)
 async def retrieve_ip_source(
     source_id: str,
-    uow=Depends(get_uow),
+    uow: AbstractUnitOfWork = Depends(get_uow),
 ) -> IpSourceSchema:
     result = await get_ip_source(source_id=source_id, uow=uow)
     if not result:

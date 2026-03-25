@@ -1,7 +1,7 @@
 """Abstract scheduler defining the contract for managing periodic sync jobs."""
 
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Any, Callable
 
 from src.domain.model import IpSource
 
@@ -10,7 +10,7 @@ class AbstractScheduler(ABC):
     """Manages periodic sync jobs for IP sources."""
 
     @abstractmethod
-    async def register(self, source: IpSource, job: Callable) -> None:
+    async def register(self, source: IpSource, job: Callable[..., Any]) -> None:
         """Registers or replaces a periodic sync job for the given source.
 
         Args:

@@ -29,15 +29,18 @@ def get_uow(request: Request) -> AbstractUnitOfWork:
 
 
 def get_filer(request: Request) -> AbstractFileOperator:
-    return request.app.state.filer
+    filer: AbstractFileOperator = request.app.state.filer
+    return filer
 
 
 def get_scheduler(request: Request) -> AbstractScheduler:
-    return request.app.state.scheduler
+    scheduler: AbstractScheduler = request.app.state.scheduler
+    return scheduler
 
 
 def get_fetcher(request: Request) -> AbstractIPFetcher:
-    return request.app.state.fetcher
+    fetcher: AbstractIPFetcher = request.app.state.fetcher
+    return fetcher
 
 
 def get_sources_config() -> SourcesConfig:

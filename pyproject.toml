@@ -45,6 +45,8 @@ dev = [
     "ruff>=0.7.0",
     "mypy>=1.13.0",
     "respx>=0.22.0",
+    "types-aiofiles>=24.0.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -73,4 +75,12 @@ fail_under = 80
 [tool.mypy]
 python_version = "3.11"
 strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_typed = true
+init_forbid_extra = true
+
+[[tool.mypy.overrides]]
+module = ["apscheduler.*"]
 ignore_missing_imports = true

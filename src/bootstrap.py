@@ -1,6 +1,7 @@
 """Wires handlers with dependencies and assembles the message bus."""
 
 import inspect
+from typing import Any, Callable
 
 from src.application import handlers, messagebus
 from src.core.ports.fetcher import AbstractIPFetcher
@@ -21,7 +22,7 @@ def bootstrap(
 
     Injects dependencies into all handlers.
     """
-    dependencies = {
+    dependencies: dict[str, Any] = {
         "uow": uow,
         "filer": filer,
         "fetcher": fetcher,
@@ -30,7 +31,8 @@ def bootstrap(
     }
     injected_event_handlers = {
         event_type: [
-            inject_dependencies(handler, dependencies) for handler in event_handlers
+            inject_dependencies(handler, dependencies)
+            for handler in event_handlers
         ]
         for event_type, event_handlers in handlers.EVENT_HANDLERS.items()
     }
@@ -46,9 +48,15 @@ def bootstrap(
     )
 
 
-def inject_dependencies(handler, dependencies):
+def inject_dependencies(
+    handler: Callable[..., Any],
+    dependencies: dict[str, Any],
+) -> Callable[..., Any]:
     params = inspect.signature(handler).parameters
     deps = {
-        name: dependency for name, dependency in dependencies.items() if name in params
+        name: dependency
+        for name, dependency in dependencies.items()
+        if name in params
     }
     return lambda message: handler(message, **deps)
+

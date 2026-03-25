@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import reconstructor
 
 from src.domain.events import (
+    Event,
     IpRangesUpdated,
     IpSourceCreated,
     IpSourcePaused,
@@ -30,7 +31,7 @@ class IpRange:
         self.source_id = source_id
         self.cidr = cidr
 
-    @reconstructor
+    @reconstructor  # type: ignore[misc]
     def _init(self) -> None:
         pass
 
@@ -67,9 +68,9 @@ class IpSource:
         self.fetched_at = fetched_at
         self.created_at = created_at
         self.updated_at = updated_at
-        self.events = []
+        self.events: list[Event] = []
 
-    @reconstructor
+    @reconstructor  # type: ignore[misc]
     def _init_events(self) -> None:
         self.events = []
 
@@ -111,10 +112,10 @@ class IpSource:
             self.events.append(IpRangesUpdated(source_id=self.id))
 
     def update_sync_interval(self, new_interval: int) -> None:
-        new_interval = SyncInterval(value=new_interval)
-        if new_interval.value == self.sync_interval.value:
+        interval = SyncInterval(value=new_interval)
+        if interval.value == self.sync_interval.value:
             return
-        self.sync_interval = new_interval
+        self.sync_interval = interval
         self.updated_at = datetime.now(timezone.utc)
         self.events.append(
             SyncIntervalUpdated(
@@ -124,17 +125,17 @@ class IpSource:
         )
 
     def update_name(self, new_name: str) -> None:
-        new_name = SourceName(value=new_name)
-        if new_name.value == self.name.value:
+        name_vo = SourceName(value=new_name)
+        if name_vo.value == self.name.value:
             return
-        self.name = new_name
+        self.name = name_vo
         self.updated_at = datetime.now(timezone.utc)
 
     def update_source_type(self, new_source_type: str) -> None:
-        new_source_type = SourceType(value=new_source_type)
-        if new_source_type.value == self.source_type.value:
+        type_vo = SourceType(value=new_source_type)
+        if type_vo.value == self.source_type.value:
             return
-        self.source_type = new_source_type
+        self.source_type = type_vo
         self.updated_at = datetime.now(timezone.utc)
 
     def pause(self) -> None:

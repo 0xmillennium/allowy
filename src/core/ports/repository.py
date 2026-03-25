@@ -14,7 +14,7 @@ class AbstractIpSourceRepository(ABC):
     methods that subclasses implement for actual storage operations.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.seen: set[IpSource] = set()
 
     async def add(self, source: IpSource) -> None:

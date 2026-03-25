@@ -35,6 +35,7 @@ class LocalFileOperator(AbstractFileOperator):
         path = self._output_dir / filename
         try:
             async with aiofiles.open(path, mode="r") as f:
-                return await f.read()
+                content = await f.read()
+                return str(content)
         except OSError as e:
             raise FileReadError(msg=str(e))

@@ -1,6 +1,7 @@
 """HTTP client utilities for CLI commands."""
 
 import os
+from typing import Any
 
 import httpx
 import typer
@@ -37,7 +38,7 @@ def request(
     client: httpx.Client,
     method: str,
     url: str,
-    **kwargs,
+    **kwargs: Any,
 ) -> httpx.Response:
     try:
         response = client.request(method, url, **kwargs)

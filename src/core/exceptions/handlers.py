@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.requests import Request
 
 from src.core.exceptions.exceptions import AppError
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_request_validation_error(
-    request, exc: RequestValidationError
+    request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     errors = exc.errors()
     logger.error(
@@ -44,7 +45,9 @@ async def handle_request_validation_error(
     )
 
 
-async def handle_validation_error(request, exc: ValidationError) -> JSONResponse:
+async def handle_validation_error(
+    request: Request, exc: ValidationError
+) -> JSONResponse:
     errors = exc.errors()
     logger.error(
         "Validation error",
@@ -73,7 +76,9 @@ async def handle_validation_error(request, exc: ValidationError) -> JSONResponse
     )
 
 
-async def handle_sqlalchemy_error(request, exc: SQLAlchemyError) -> JSONResponse:
+async def handle_sqlalchemy_error(
+    request: Request, exc: SQLAlchemyError
+) -> JSONResponse:
     logger.error(
         "Database error",
         extra={
@@ -92,7 +97,9 @@ async def handle_sqlalchemy_error(request, exc: SQLAlchemyError) -> JSONResponse
     )
 
 
-async def handle_http_exception(request, exc: HTTPException) -> JSONResponse:
+async def handle_http_exception(
+    request: Request, exc: HTTPException
+) -> JSONResponse:
     logger.error(
         "HTTP error",
         extra={
@@ -113,7 +120,9 @@ async def handle_http_exception(request, exc: HTTPException) -> JSONResponse:
     )
 
 
-async def handle_app_exception(request, exc: AppError) -> JSONResponse:
+async def handle_app_exception(
+    request: Request, exc: AppError
+) -> JSONResponse:
     logger.error(
         "Application error",
         extra={
@@ -133,7 +142,9 @@ async def handle_app_exception(request, exc: AppError) -> JSONResponse:
     )
 
 
-async def handle_generic_error(request, exc: Exception) -> JSONResponse:
+async def handle_generic_error(
+    request: Request, exc: Exception
+) -> JSONResponse:
     logger.error(
         "Unexpected error",
         extra={

@@ -20,17 +20,17 @@ class SqlAlchemyIpSourceRepository(AbstractIpSourceRepository):
 
     async def _get(self, source_id: IpSourceID) -> IpSource | None:
         result = await self.session.execute(
-            select(IpSource).where(IpSource.id == source_id)
+            select(IpSource).where(IpSource.id == source_id)  # type: ignore[arg-type]
         )
         return result.scalars().first()
 
     async def _get_by_url(self, url: SourceUrl) -> IpSource | None:
-        result = await self.session.execute(select(IpSource).where(IpSource.url == url))
+        result = await self.session.execute(select(IpSource).where(IpSource.url == url))  # type: ignore[arg-type]
         return result.scalars().first()
 
     async def _get_by_name(self, name: SourceName) -> IpSource | None:
         result = await self.session.execute(
-            select(IpSource).where(IpSource.name == name)
+            select(IpSource).where(IpSource.name == name)  # type: ignore[arg-type]
         )
         return result.scalars().first()
 

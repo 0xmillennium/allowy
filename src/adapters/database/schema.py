@@ -1,10 +1,11 @@
 """SQLAlchemy table definitions and custom column types."""
 
-from datetime import timezone
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     Column,
     DateTime,
+    Dialect,
     ForeignKey,
     Integer,
     MetaData,
@@ -15,18 +16,22 @@ from sqlalchemy import (
 )
 
 
-class TZDateTime(TypeDecorator):
+class TZDateTime(TypeDecorator[datetime]):
     """Stores datetimes as naive UTC and returns them as timezone-aware UTC objects."""
 
     impl = DateTime
     cache_ok = True
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(
+        self, value: datetime | None, dialect: Dialect
+    ) -> datetime | None:
         if value is not None:
             return value.astimezone(timezone.utc).replace(tzinfo=None)
         return value
 
-    def process_result_value(self, value, dialect):
+    def process_result_value(
+        self, value: datetime | None, dialect: Dialect
+    ) -> datetime | None:
         if value is not None:
             return value.replace(tzinfo=timezone.utc)
         return value

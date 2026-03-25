@@ -1,6 +1,7 @@
 """SQLAlchemy implementation of the unit of work pattern."""
 
 import logging
+from types import TracebackType
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -22,7 +23,12 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         logger.debug("UoW session opened")
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         if exc_type:
             await self.rollback()
             logger.warning("UoW rolled back", extra={"exc_type": exc_type.__name__})

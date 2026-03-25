@@ -25,7 +25,7 @@ class SourceStatus(str, Enum):
     FAILED = "failed"
     PAUSED = "paused"
 
-    def __composite_values__(self):
+    def __composite_values__(self) -> tuple[str]:
         return (self.value,)
 
 
@@ -33,7 +33,7 @@ class IPVersion(str, Enum):
     V4 = "v4"
     V6 = "v6"
 
-    def __composite_values__(self):
+    def __composite_values__(self) -> tuple[str]:
         return (self.value,)
 
 

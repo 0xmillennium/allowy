@@ -1,5 +1,6 @@
 """CLI commands for managing IP sources."""
 
+import httpx
 import typer
 
 from src.entrypoints.cli.client import create_client, request, resolve_base_url
@@ -7,7 +8,7 @@ from src.entrypoints.cli.client import create_client, request, resolve_base_url
 app = typer.Typer(help="Manage IP sources.")
 
 
-def _get_client(ctx: typer.Context) -> tuple:
+def _get_client(ctx: typer.Context) -> tuple[httpx.Client, str]:
     base_url = resolve_base_url(ctx.obj)
     return create_client(base_url), base_url
 

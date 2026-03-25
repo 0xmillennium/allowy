@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable, Dict, List, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Type, Union
 
 from src.core.exceptions.exceptions import (
     InvalidMessageTypeError,
@@ -36,15 +36,15 @@ class MessageBus(AbstractMessageBus):
     def __init__(
         self,
         uow: "AbstractUnitOfWork",
-        event_handlers: Dict[Type[events.Event], List[Callable]],
-        command_handlers: Dict[Type[commands.Command], Callable],
+        event_handlers: Dict[Type[events.Event], List[Callable[..., Any]]],
+        command_handlers: Dict[Type[commands.Command], Callable[..., Any]],
     ):
         self.uow = uow
         self.event_handlers = event_handlers
         self.command_handlers = command_handlers
         self.queue: List[Message] = []
 
-    async def handle(self, message: Message):
+    async def handle(self, message: Message) -> None:
         """
         Handles an incoming message, which can be either a Command or an Event.
 
@@ -76,7 +76,7 @@ class MessageBus(AbstractMessageBus):
                 )
         logger.debug("Message bus processing complete")
 
-    async def handle_event(self, event: events.Event):
+    async def handle_event(self, event: events.Event) -> None:
         """
         Dispatches an event to all of its registered handlers and publishes
         it if it's an OutgoingEvent.
@@ -110,7 +110,7 @@ class MessageBus(AbstractMessageBus):
                 },
             )
 
-    async def handle_command(self, command: commands.Command):
+    async def handle_command(self, command: commands.Command) -> None:
         """
         Dispatches a command to its single registered handler.
 
