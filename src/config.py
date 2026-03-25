@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -30,9 +30,10 @@ class Settings(BaseSettings):
     # Seed Sources
     seed_sources_path: Path = Path("./config/sources.yaml")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
 
 
 class SeedSource(BaseModel):
@@ -58,6 +59,13 @@ def setup_logging(config_path: Path) -> None:
     if config_path.exists():
         with open(config_path) as f:
             config = yaml.safe_load(f)
+
+        # Ensure log directories exist before configuring
+        if "handlers" in config:
+            for handler in config["handlers"].values():
+                if "filename" in handler:
+                    Path(handler["filename"]).parent.mkdir(parents=True, exist_ok=True)
+
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=logging.INFO)
