@@ -4,7 +4,7 @@ Periodically syncs IP ranges from upstream providers and generates ready-to-use 
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-<!-- TODO: Add CI status badge when pipeline exists -->
+[![CI](https://github.com/0xmillennium/allowy/actions/workflows/ci.yml/badge.svg)](https://github.com/0xmillennium/allowy/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Why
@@ -318,8 +318,20 @@ pytest tests/e2e          # end-to-end only
 
 ```bash
 ruff check src/ tests/
+ruff format --check src/ tests/
 mypy src/
 ```
+
+### CI/CD
+
+CI runs automatically on PRs to `master` and pushes to `master` via GitHub Actions:
+
+- **Quality:** ruff lint, ruff format, mypy, pip-audit
+- **Tests:** unit, integration, e2e with 80% coverage gate
+- **Docker:** build validation on `master` pushes
+- **Matrix:** Python 3.11, 3.12, 3.13
+
+CD triggers on version tags (`v*.*.*`) — builds and pushes to GHCR.
 
 ### Adding a New Parser
 
@@ -366,7 +378,6 @@ See [`src/adapters/fetcher/parsers/google.py`](src/adapters/fetcher/parsers/goog
 
 - Only the `google` parser is implemented — no Cloudflare, AWS, or other providers yet
 - Only tested with SQLite — other SQLAlchemy-compatible async backends (e.g., PostgreSQL with asyncpg) should work but are untested
-- No CI/CD pipeline
 - No authentication on the HTTP API — do not expose publicly without a reverse proxy or firewall
 - Single-node only — APScheduler runs in-process with no distributed locking
 
