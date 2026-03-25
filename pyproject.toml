@@ -17,10 +17,7 @@ keywords = [
     "crawler",
 ]
 authors = [
-    {
-        name = "0xmillennium",
-        email = "[0xmillennium@protonmail.com]",
-    },
+    { name = "0xmillennium", email = "0xmillennium@protonmail.com" },
 ]
 dependencies = [
     "fastapi>=0.115.0",
