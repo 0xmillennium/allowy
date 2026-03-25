@@ -17,6 +17,7 @@ htmlcov/
 
 # Type checking
 .mypy_cache/
+.ruff_cache/
 
 # Project runtime
 config/database.db
