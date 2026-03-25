@@ -365,7 +365,7 @@ See [`src/adapters/fetcher/parsers/google.py`](src/adapters/fetcher/parsers/goog
 ## Known Limitations
 
 - Only the `google` parser is implemented — no Cloudflare, AWS, or other providers yet
-- SQLite is the only supported database backend
+- Only tested with SQLite — other SQLAlchemy-compatible async backends (e.g., PostgreSQL with asyncpg) should work but are untested
 - No CI/CD pipeline
 - No authentication on the HTTP API — do not expose publicly without a reverse proxy or firewall
 - Single-node only — APScheduler runs in-process with no distributed locking

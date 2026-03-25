@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
-from sqlalchemy.pool import StaticPool
 from src.config import settings
 from src.adapters.fetcher import HttpIPFetcher
 from src.adapters.scheduler import APScheduler
@@ -48,10 +47,13 @@ async def lifespan(app: FastAPI):
     try:
 
         # infrastructure
+        engine_kwargs = {}
+        if settings.database_url.startswith("sqlite"):
+            engine_kwargs["connect_args"] = {"check_same_thread": False}
+
         engine = create_async_engine(
             settings.database_url,
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
+            **engine_kwargs,
         )
         session_factory = async_sessionmaker(
             engine,
