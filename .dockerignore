@@ -13,3 +13,4 @@ outputs/
 config/database.db
 .vscode/
 .idea/
+.github/
