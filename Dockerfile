@@ -1,4 +1,4 @@
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --no-cache-dir .
 
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 RUN groupadd --gid 1000 allowy \
     && useradd --uid 1000 --gid allowy --no-create-home allowy
